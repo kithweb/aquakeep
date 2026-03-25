@@ -26,16 +26,25 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
-      - name: Create deploy directory on VPS
-        run: |
-          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
-
       - name: Rsync files to VPS
         run: |
           VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
           echo "Deploying to $VPS_HOST:$VPS_DIR"
           rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
+
+      - name: Install Docker Compose on VPS (if missing)
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "
+            if ! command -v docker-compose >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y docker-compose
+            fi
+          "
+
+      - name: Create directory on VPS
+        run: |
+          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
 
       - name: Remote commands
         run: |
