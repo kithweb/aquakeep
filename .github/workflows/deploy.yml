@@ -28,20 +28,24 @@ jobs:
 
       - name: Create directory on VPS
         run: |
-          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
+          VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
 
-      - name: Rsync files to VPS
+      - name: Rsync files to VPS (exclude .env)
         run: |
-          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
-          rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
+          VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
+          rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='.env' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
 
-      - name: Debug files on VPS
+      - name: Copy .env from secrets to VPS
         run: |
-          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "ls -la '${VPS_DIR}'"
+          VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
+          if [ -n "${{ secrets.ENV_CONTENT }}" ]; then
+            echo "${{ secrets.ENV_CONTENT }}" | ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cat > '${VPS_DIR}/.env'"
+          else
+            echo "No ENV_CONTENT secret found. Please ensure .env is manually placed on VPS."
+          fi
 
       - name: Deploy with docker-compose
         run: |
-          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
+          VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker-compose pull && docker-compose up -d --build"
