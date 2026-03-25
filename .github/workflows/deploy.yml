@@ -24,12 +24,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # add host to known hosts to avoid interactive prompt
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
       - name: Rsync files to VPS
         run: |
-          # determine remote deploy dir (allow override via DEPLOY_PATH)
           VPS_DIR=${DEPLOY_PATH:-/home/${VPS_USER}/aquakeep}
           echo "Deploying to $VPS_HOST:$VPS_DIR"
           rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
@@ -37,4 +35,4 @@ jobs:
       - name: Remote: pull and restart docker-compose
         run: |
           VPS_DIR=${DEPLOY_PATH:-/home/${VPS_USER}/aquakeep}
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_DIR} && docker compose pull && docker compose up -d --build"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker-compose pull && docker-compose up -d --build"
