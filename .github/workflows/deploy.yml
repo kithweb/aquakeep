@@ -32,22 +32,23 @@ jobs:
           echo "Deploying to $VPS_HOST:$VPS_DIR"
           rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
 
-      - name: Install Docker Compose on VPS (if missing)
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "
-            if ! command -v docker-compose >/dev/null 2>&1; then
-              sudo apt-get update
-              sudo apt-get install -y docker-compose
-            fi
-          "
-
       - name: Create directory on VPS
         run: |
           VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
 
+      - name: Install Docker Compose plugin on VPS
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "
+            mkdir -p ~/.docker/cli-plugins
+            if [ ! -f ~/.docker/cli-plugins/docker-compose ]; then
+              curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+              chmod +x ~/.docker/cli-plugins/docker-compose
+            fi
+          "
+
       - name: Remote commands
         run: |
           VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker-compose pull"
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker-compose up -d --build"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker compose pull"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd '${VPS_DIR}' && docker compose up -d --build"
