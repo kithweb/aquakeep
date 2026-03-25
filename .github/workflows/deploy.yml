@@ -26,6 +26,11 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
+      - name: Create deploy directory on VPS
+        run: |
+          VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
+
       - name: Rsync files to VPS
         run: |
           VPS_DIR="${DEPLOY_PATH:-~/aquakeep}"
