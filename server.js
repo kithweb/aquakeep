@@ -72,7 +72,9 @@ app.post('/api/order', async (req, res) => {
         client = await pool.connect();
         const insertQuery = `INSERT INTO orders (name, phone, items, total, utm_source, utm_medium, utm_campaign)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`;
-        const values = [name || null, phone || null, items || null, total || 0, utm_source || null, utm_medium || null, utm_campaign || null];
+        // Преобразуем items в JSON только если это непустой массив
+        const itemsJson = (Array.isArray(items) && items.length) ? JSON.stringify(items) : null;
+        const values = [name || null, phone || null, itemsJson, total || 0, utm_source || null, utm_medium || null, utm_campaign || null];
         const result = await client.query(insertQuery, values);
         const newId = result.rows[0].id;
 
