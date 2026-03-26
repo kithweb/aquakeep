@@ -7,6 +7,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const { SocksProxyAgent } = require('socks-proxy-agent');
 const { Pool } = require('pg');
 const session = require('express-session');
+const multer = require('multer');
+const fs = require('fs');
 
 // Initialize Telegram bot (optional)
 let bot = null;
@@ -59,14 +61,47 @@ async function ensureSchema() {
         utm_medium TEXT,
         utm_campaign TEXT
     );`;
+    const createProducts = `
+    CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        volume INTEGER,
+        price INTEGER,
+        description TEXT,
+        image_url TEXT
+    );`;
     try {
         await pool.query(create);
+        await pool.query(createProducts);
         console.log('Ensured orders table exists');
     } catch (err) {
         console.error('Failed to ensure DB schema:', err);
         throw err;
     }
 }
+
+// Ensure uploads directory exists and configure multer
+const uploadsDir = path.join(__dirname, 'uploads');
+try {
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (err) {
+    console.error('Failed to create uploads directory:', err);
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname) || '';
+        const name = Date.now() + '-' + Math.random().toString(36).slice(2,8) + ext;
+        cb(null, name);
+    }
+});
+const upload = multer({ storage });
+
+// Serve uploaded files
+app.use('/uploads', express.static(uploadsDir));
 
 // In-memory auth codes: code -> { userId, expiresAt }
 const authCodes = new Map();
@@ -121,10 +156,12 @@ if (bot) {
                     const messageId = q.message.message_id;
                     const itemsText = (order.items || []).map(i => `${i.qty}×${i.id || i.name || ''}`).join('\n');
                     const text = `Заказ #${order.id}\nИмя: ${order.name || '-'}\nТелефон: ${order.phone || '-'}\nСумма: ${order.total || 0} ₽\nТовары:\n${itemsText}\nСтатус: ${order.status}`;
-                    const keyboard = { inline_keyboard: [[
-                        { text: 'Mark processed', callback_data: `status:${order.id}:processed` },
-                        { text: 'Agree', callback_data: `status:${order.id}:agreed` }
-                    ]] };
+                    const keyboard = {
+                        inline_keyboard: [[
+                            { text: 'Mark processed', callback_data: `status:${order.id}:processed` },
+                            { text: 'Agree', callback_data: `status:${order.id}:agreed` }
+                        ]]
+                    };
                     await bot.editMessageText(text, { chat_id: chatId, message_id: messageId, reply_markup: keyboard });
                     await bot.answerCallbackQuery(q.id, { text: 'Статус обновлён' });
                 }
@@ -133,7 +170,7 @@ if (bot) {
             }
         } catch (err) {
             console.error('callback_query handler error:', err);
-            try { await bot.answerCallbackQuery(q.id, { text: 'Ошибка', show_alert: true }); } catch(e){}
+            try { await bot.answerCallbackQuery(q.id, { text: 'Ошибка', show_alert: true }); } catch (e) { }
         }
     });
 }
@@ -164,7 +201,7 @@ app.post('/api/admin/auth', async (req, res) => {
 
 app.post('/api/admin/logout', (req, res) => {
     if (req.session) {
-        req.session.destroy(() => {});
+        req.session.destroy(() => { });
     }
     res.json({ success: true });
 });
@@ -190,7 +227,7 @@ app.get('/api/orders', requireAdmin, async (req, res) => {
 app.post('/api/orders/:id/status', requireAdmin, async (req, res) => {
     const id = req.params.id;
     const { status } = req.body || {};
-    const allowed = ['new','processed','agreed'];
+    const allowed = ['new', 'processed', 'agreed'];
     if (!allowed.includes(status)) return res.status(400).json({ success: false, error: 'invalid_status' });
     const client = await pool.connect();
     try {
@@ -200,6 +237,90 @@ app.post('/api/orders/:id/status', requireAdmin, async (req, res) => {
         res.json({ success: true, order });
     } catch (err) {
         console.error('POST /api/orders/:id/status error:', err);
+        res.status(500).json({ success: false, error: 'db_error' });
+    } finally {
+        client.release();
+    }
+});
+
+// --- Products endpoints ---
+// Public list of products
+app.get('/api/products', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const q = await client.query('SELECT id, name, volume, price, description, image_url FROM products ORDER BY id');
+        res.json(q.rows);
+    } catch (err) {
+        console.error('GET /api/products error:', err);
+        res.status(500).json({ success: false, error: 'db_error' });
+    } finally {
+        client.release();
+    }
+});
+
+// Create product (multipart/form-data)
+app.post('/api/products', requireAdmin, upload.single('image'), async (req, res) => {
+    const { name, volume, price, description } = req.body || {};
+    const file = req.file;
+    const imageUrl = file ? `/uploads/${file.filename}` : null;
+    const client = await pool.connect();
+    try {
+        const q = await client.query('INSERT INTO products (name, volume, price, description, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name||null, volume?parseInt(volume):null, price?parseInt(price):null, description||null, imageUrl]);
+        res.json(q.rows[0]);
+    } catch (err) {
+        console.error('POST /api/products error:', err);
+        res.status(500).json({ success: false, error: 'db_error' });
+    } finally {
+        client.release();
+    }
+});
+
+// Update product (multipart/form-data)
+app.put('/api/products/:id', requireAdmin, upload.single('image'), async (req, res) => {
+    const id = req.params.id;
+    const { name, volume, price, description } = req.body || {};
+    const file = req.file;
+    const client = await pool.connect();
+    try {
+        // fetch existing
+        const cur = await client.query('SELECT * FROM products WHERE id=$1', [id]);
+        if (cur.rowCount === 0) return res.status(404).json({ success: false, error: 'not_found' });
+        const existing = cur.rows[0];
+        let imageUrl = existing.image_url;
+        if (file) {
+            // remove old file
+            if (existing.image_url) {
+                const oldPath = path.join(__dirname, existing.image_url.replace(/^\//, ''));
+                try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e){}
+            }
+            imageUrl = `/uploads/${file.filename}`;
+        }
+        const upd = await client.query('UPDATE products SET name=$1, volume=$2, price=$3, description=$4, image_url=$5 WHERE id=$6 RETURNING *', [name||existing.name, volume?parseInt(volume):existing.volume, price?parseInt(price):existing.price, description||existing.description, imageUrl, id]);
+        res.json(upd.rows[0]);
+    } catch (err) {
+        console.error('PUT /api/products/:id error:', err);
+        res.status(500).json({ success: false, error: 'db_error' });
+    } finally {
+        client.release();
+    }
+});
+
+// Delete product
+app.delete('/api/products/:id', requireAdmin, async (req, res) => {
+    const id = req.params.id;
+    const client = await pool.connect();
+    try {
+        const cur = await client.query('SELECT * FROM products WHERE id=$1', [id]);
+        if (cur.rowCount === 0) return res.status(404).json({ success: false, error: 'not_found' });
+        const existing = cur.rows[0];
+        if (existing.image_url) {
+            const oldPath = path.join(__dirname, existing.image_url.replace(/^\//, ''));
+            try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e){}
+        }
+        await client.query('DELETE FROM products WHERE id=$1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('DELETE /api/products/:id error:', err);
         res.status(500).json({ success: false, error: 'db_error' });
     } finally {
         client.release();

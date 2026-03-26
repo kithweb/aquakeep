@@ -1,80 +1,82 @@
 <!doctype html>
 <html lang="ru">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Админ-панель — Aquakeep</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Админ-панель — Aquakeep</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 text-gray-900">
-  <div id="app" class="min-h-screen p-6">
-    <div class="max-w-6xl mx-auto">
-      <header class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold">Админ-панель</h1>
-        <div id="auth-area"></div>
-      </header>
+    <div id="app" class="min-h-screen p-6">
+        <div class="max-w-6xl mx-auto">
+            <header class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-semibold">Админ-панель</h1>
+                <div id="auth-area"></div>
+            </header>
 
-      <main id="main" class="bg-white rounded-lg shadow p-6">
-        <!-- content injected by JS -->
-      </main>
+            <main id="main" class="bg-white rounded-lg shadow p-6">
+                <!-- content injected by JS -->
+            </main>
+        </div>
     </div>
-  </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed right-4 top-6 w-80 z-50 pointer-events-none"></div>
+    <!-- Toast -->
+    <div id="toast" class="fixed right-4 top-6 w-80 z-50 pointer-events-none"></div>
 
-  <script>
-    // ---- Helpers ----
-    function el(html) {
-      const template = document.createElement('template');
-      template.innerHTML = html.trim();
-      return template.content.firstChild;
-    }
-
-    function showToast(message, type = 'info') {
-      const id = 't' + Date.now();
-      const elToast = document.createElement('div');
-      elToast.id = id;
-      elToast.className = `mb-2 p-3 rounded shadow pointer-events-auto text-sm ${type === 'error' ? 'bg-red-100 text-red-900' : 'bg-green-100 text-green-900'}`;
-      elToast.textContent = message;
-      const container = document.getElementById('toast');
-      container.appendChild(elToast);
-      setTimeout(() => {
-        elToast.remove();
-      }, 5000);
-    }
-
-    async function api(path, opts = {}) {
-      try {
-        const res = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, ...opts });
-        if (!res.ok) {
-          const text = await res.text().catch(()=>'');
-          throw new Error(text || res.statusText || 'network_error');
+    <script>
+        // ---- Helpers ----
+        function el(html) {
+            const template = document.createElement('template');
+            template.innerHTML = html.trim();
+            return template.content.firstChild;
         }
-        // try parse json
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) return await res.json();
-        return await res.text();
-      } catch (err) {
-        throw err;
-      }
-    }
 
-    // ---- Auth flow ----
-    async function checkAuth() {
-      try {
-        const json = await api('/api/admin/check', { method: 'GET' });
-        return json && json.authorized;
-      } catch (err) {
-        // treat as not authorized
-        return false;
-      }
-    }
+        function showToast(message, type = 'info') {
+            const id = 't' + Date.now();
+            const elToast = document.createElement('div');
+            elToast.id = id;
+            elToast.className = `mb-2 p-3 rounded shadow pointer-events-auto text-sm ${type === 'error' ? 'bg-red-100 text-red-900' : 'bg-green-100 text-green-900'}`;
+            elToast.textContent = message;
+            const container = document.getElementById('toast');
+            container.appendChild(elToast);
+            setTimeout(() => {
+                elToast.remove();
+            }, 5000);
+        }
 
-    function renderLogin() {
-      const main = document.getElementById('main');
-      main.innerHTML = '';
-      const node = el(`
+        async function api(path, opts = {}) {
+            try {
+                const res = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, ...opts });
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    throw new Error(text || res.statusText || 'network_error');
+                }
+                // try parse json
+                const ct = res.headers.get('content-type') || '';
+                if (ct.includes('application/json')) return await res.json();
+                return await res.text();
+            } catch (err) {
+                throw err;
+            }
+        }
+
+        // ---- Auth flow ----
+        async function checkAuth() {
+            try {
+                const json = await api('/api/admin/check', { method: 'GET' });
+                return json && json.authorized;
+            } catch (err) {
+                // treat as not authorized
+                return false;
+            }
+        }
+
+        function renderLogin() {
+            const main = document.getElementById('main');
+            main.innerHTML = '';
+            const node = el(`
         <div>
           <h2 class="text-lg font-medium mb-4">Вход в админку</h2>
           <form id="login-form" class="space-y-4">
@@ -89,117 +91,117 @@
           </form>
         </div>
       `);
-      main.appendChild(node);
+            main.appendChild(node);
 
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const code = document.getElementById('code').value.trim();
-        if (!/^\d{6}$/.test(code)) { showToast('Код должен содержать 6 цифр', 'error'); return; }
-        try {
-          await api('/api/admin/auth', { method: 'POST', body: JSON.stringify({ code }) });
-          // success -> reload to initialize as authorized
-          location.reload();
-        } catch (err) {
-          showToast('Авторизация не удалась: ' + (err.message || err), 'error');
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const code = document.getElementById('code').value.trim();
+                if (!/^\d{6}$/.test(code)) { showToast('Код должен содержать 6 цифр', 'error'); return; }
+                try {
+                    await api('/api/admin/auth', { method: 'POST', body: JSON.stringify({ code }) });
+                    // success -> reload to initialize as authorized
+                    location.reload();
+                } catch (err) {
+                    showToast('Авторизация не удалась: ' + (err.message || err), 'error');
+                }
+            });
         }
-      });
-    }
 
-    // ---- Admin UI ----
-    function renderAdminHeader() {
-      const authArea = document.getElementById('auth-area');
-      authArea.innerHTML = '';
-      const btn = document.createElement('button');
-      btn.className = 'text-sm text-gray-600 underline';
-      btn.textContent = 'Выйти';
-      btn.addEventListener('click', async () => {
-        try {
-          await api('/api/admin/logout', { method: 'POST' });
-          location.reload();
-        } catch (err) {
-          showToast('Ошибка выхода: ' + err.message, 'error');
+        // ---- Admin UI ----
+        function renderAdminHeader() {
+            const authArea = document.getElementById('auth-area');
+            authArea.innerHTML = '';
+            const btn = document.createElement('button');
+            btn.className = 'text-sm text-gray-600 underline';
+            btn.textContent = 'Выйти';
+            btn.addEventListener('click', async () => {
+                try {
+                    await api('/api/admin/logout', { method: 'POST' });
+                    location.reload();
+                } catch (err) {
+                    showToast('Ошибка выхода: ' + err.message, 'error');
+                }
+            });
+            authArea.appendChild(btn);
         }
-      });
-      authArea.appendChild(btn);
-    }
 
-    let ordersCache = [];
-    let currentTab = 'orders';
-    let currentFilter = 'all';
+        let ordersCache = [];
+        let currentTab = 'orders';
+        let currentFilter = 'all';
 
-    function renderTabs() {
-      const main = document.getElementById('main');
-      main.innerHTML = '';
+        function renderTabs() {
+            const main = document.getElementById('main');
+            main.innerHTML = '';
 
-      const tabs = el(`<div class="mb-4">
+            const tabs = el(`<div class="mb-4">
         <nav class="flex space-x-2">
           <button id="tab-orders" class="px-3 py-2 rounded bg-blue-600 text-white">Заказы</button>
           <button id="tab-products" class="px-3 py-2 rounded bg-gray-100 text-gray-700">Товары</button>
         </nav>
       </div>`);
 
-      main.appendChild(tabs);
+            main.appendChild(tabs);
 
-      const content = el('<div id="tab-content"></div>');
-      main.appendChild(content);
+            const content = el('<div id="tab-content"></div>');
+            main.appendChild(content);
 
-      document.getElementById('tab-orders').addEventListener('click', () => { currentTab='orders'; showTab(); });
-      document.getElementById('tab-products').addEventListener('click', () => { currentTab='products'; showTab(); });
+            document.getElementById('tab-orders').addEventListener('click', () => { currentTab = 'orders'; showTab(); });
+            document.getElementById('tab-products').addEventListener('click', () => { currentTab = 'products'; showTab(); });
 
-      showTab();
-    }
+            showTab();
+        }
 
-    function showTab() {
-      const ordersBtn = document.getElementById('tab-orders');
-      const productsBtn = document.getElementById('tab-products');
-      if (currentTab === 'orders') {
-        ordersBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
-        productsBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
-        renderOrdersTab();
-      } else {
-        productsBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
-        ordersBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
-        renderProductsTab();
-      }
-    }
+        function showTab() {
+            const ordersBtn = document.getElementById('tab-orders');
+            const productsBtn = document.getElementById('tab-products');
+            if (currentTab === 'orders') {
+                ordersBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
+                productsBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
+                renderOrdersTab();
+            } else {
+                productsBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
+                ordersBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
+                renderProductsTab();
+            }
+        }
 
-    // Orders tab
-    async function loadOrders() {
-      try {
-        const data = await api('/api/orders');
-        // Expect array
-        if (!Array.isArray(data)) throw new Error('Invalid orders data');
-        ordersCache = data;
-        return data;
-      } catch (err) {
-        showToast('Не удалось загрузить заказы: ' + (err.message || err), 'error');
-        ordersCache = [];
-        return [];
-      }
-    }
+        // Orders tab
+        async function loadOrders() {
+            try {
+                const data = await api('/api/orders');
+                // Expect array
+                if (!Array.isArray(data)) throw new Error('Invalid orders data');
+                ordersCache = data;
+                return data;
+            } catch (err) {
+                showToast('Не удалось загрузить заказы: ' + (err.message || err), 'error');
+                ordersCache = [];
+                return [];
+            }
+        }
 
-    function formatDate(dt) {
-      try {
-        const d = new Date(dt);
-        return d.toLocaleString();
-      } catch (e) { return dt; }
-    }
+        function formatDate(dt) {
+            try {
+                const d = new Date(dt);
+                return d.toLocaleString();
+            } catch (e) { return dt; }
+        }
 
-    function parseItems(items) {
-      if (!items) return [];
-      if (typeof items === 'string') {
-        try { return JSON.parse(items); } catch (e) { return [] }
-      }
-      if (Array.isArray(items)) return items;
-      return [];
-    }
+        function parseItems(items) {
+            if (!items) return [];
+            if (typeof items === 'string') {
+                try { return JSON.parse(items); } catch (e) { return [] }
+            }
+            if (Array.isArray(items)) return items;
+            return [];
+        }
 
-    function renderOrdersTable(container, rows) {
-      container.innerHTML = '';
-      const tableWrap = el('<div class="overflow-x-auto"> </div>');
-      const table = document.createElement('table');
-      table.className = 'min-w-full divide-y divide-gray-200 text-sm';
-      table.innerHTML = `
+        function renderOrdersTable(container, rows) {
+            container.innerHTML = '';
+            const tableWrap = el('<div class="overflow-x-auto"> </div>');
+            const table = document.createElement('table');
+            table.className = 'min-w-full divide-y divide-gray-200 text-sm';
+            table.innerHTML = `
         <thead class="bg-gray-50"><tr>
           <th class="px-3 py-2 text-left">ID</th>
           <th class="px-3 py-2 text-left">Дата</th>
@@ -212,18 +214,18 @@
         </tr></thead>
         <tbody id="orders-tbody" class="bg-white divide-y divide-gray-100"></tbody>
       `;
-      tableWrap.appendChild(table);
-      container.appendChild(tableWrap);
+            tableWrap.appendChild(table);
+            container.appendChild(tableWrap);
 
-      const tbody = table.querySelector('#orders-tbody');
+            const tbody = table.querySelector('#orders-tbody');
 
-      rows.forEach(o => {
-        const items = parseItems(o.items);
-        const itemsHtml = items.map(it => `<div class="text-xs">${(it.qty||1)}× ${it.id || it.name || ''}</div>`).join('');
-        const utm = [o.utm_source, o.utm_medium, o.utm_campaign].filter(Boolean).join(' / ');
+            rows.forEach(o => {
+                const items = parseItems(o.items);
+                const itemsHtml = items.map(it => `<div class="text-xs">${(it.qty || 1)}× ${it.id || it.name || ''}</div>`).join('');
+                const utm = [o.utm_source, o.utm_medium, o.utm_campaign].filter(Boolean).join(' / ');
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
           <td class="px-3 py-2 align-top">${o.id}</td>
           <td class="px-3 py-2 align-top">${formatDate(o.created_at || o.created)}</td>
           <td class="px-3 py-2 align-top">${o.name || ''}</td>
@@ -238,33 +240,33 @@
           </select></td>
         `;
 
-        tbody.appendChild(tr);
-        const sel = tr.querySelector('.status-select');
-        sel.value = o.status || 'new';
-        sel.addEventListener('change', async (e) => {
-          const newStatus = e.target.value;
-          const id = e.target.getAttribute('data-id');
-          try {
-            await api(`/api/orders/${id}/status`, { method: 'POST', body: JSON.stringify({ status: newStatus }) });
-            showToast('Статус обновлён');
-            // update cache
-            const idx = ordersCache.findIndex(x=>String(x.id)===String(id));
-            if (idx>=0) { ordersCache[idx].status = newStatus; }
-          } catch (err) {
-            showToast('Не удалось обновить статус: ' + (err.message||err), 'error');
-            // revert
-            const idx = ordersCache.findIndex(x=>String(x.id)===String(id));
-            if (idx>=0) { e.target.value = ordersCache[idx].status || 'new'; }
-          }
-        });
-      });
-    }
+                tbody.appendChild(tr);
+                const sel = tr.querySelector('.status-select');
+                sel.value = o.status || 'new';
+                sel.addEventListener('change', async (e) => {
+                    const newStatus = e.target.value;
+                    const id = e.target.getAttribute('data-id');
+                    try {
+                        await api(`/api/orders/${id}/status`, { method: 'POST', body: JSON.stringify({ status: newStatus }) });
+                        showToast('Статус обновлён');
+                        // update cache
+                        const idx = ordersCache.findIndex(x => String(x.id) === String(id));
+                        if (idx >= 0) { ordersCache[idx].status = newStatus; }
+                    } catch (err) {
+                        showToast('Не удалось обновить статус: ' + (err.message || err), 'error');
+                        // revert
+                        const idx = ordersCache.findIndex(x => String(x.id) === String(id));
+                        if (idx >= 0) { e.target.value = ordersCache[idx].status || 'new'; }
+                    }
+                });
+            });
+        }
 
-    async function renderOrdersTab() {
-      const content = document.getElementById('tab-content');
-      content.innerHTML = '';
+        async function renderOrdersTab() {
+            const content = document.getElementById('tab-content');
+            content.innerHTML = '';
 
-      const controls = el(`<div class="mb-4 flex items-center justify-between">
+            const controls = el(`<div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <label class="text-sm mr-2">Фильтр по статусу:</label>
           <select id="filter-status" class="border rounded px-2 py-1 text-sm">
@@ -279,49 +281,206 @@
         </div>
       </div>`);
 
-      content.appendChild(controls);
+            content.appendChild(controls);
 
-      const tableContainer = el('<div id="orders-container"></div>');
-      content.appendChild(tableContainer);
+            const tableContainer = el('<div id="orders-container"></div>');
+            content.appendChild(tableContainer);
 
-      document.getElementById('reload-orders').addEventListener('click', async () => { await refreshOrders(); });
-      document.getElementById('filter-status').addEventListener('change', (e) => { currentFilter = e.target.value; applyFilter(); });
+            document.getElementById('reload-orders').addEventListener('click', async () => { await refreshOrders(); });
+            document.getElementById('filter-status').addEventListener('change', (e) => { currentFilter = e.target.value; applyFilter(); });
 
-      await refreshOrders();
-    }
+            await refreshOrders();
+        }
 
-    async function refreshOrders() {
-      const container = document.getElementById('orders-container');
-      container.innerHTML = '<div class="py-8 text-center text-gray-500">Загрузка...</div>';
-      await loadOrders();
-      applyFilter();
-    }
+        async function refreshOrders() {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = '<div class="py-8 text-center text-gray-500">Загрузка...</div>';
+            await loadOrders();
+            applyFilter();
+        }
 
-    function applyFilter() {
-      const container = document.getElementById('orders-container');
-      let rows = ordersCache.slice();
-      if (currentFilter && currentFilter !== 'all') rows = rows.filter(r => (r.status||'new') === currentFilter);
-      renderOrdersTable(container, rows);
-    }
+        function applyFilter() {
+            const container = document.getElementById('orders-container');
+            let rows = ordersCache.slice();
+            if (currentFilter && currentFilter !== 'all') rows = rows.filter(r => (r.status || 'new') === currentFilter);
+            renderOrdersTable(container, rows);
+        }
 
-    // Products tab (placeholder)
-    function renderProductsTab() {
-      const content = document.getElementById('tab-content');
-      content.innerHTML = '';
-      const node = el('<div class="py-8 text-center text-gray-600">В разработке</div>');
-      content.appendChild(node);
-    }
+            // Products tab
+            async function loadProductsList() {
+                try {
+                    const data = await api('/api/products');
+                    if (!Array.isArray(data)) throw new Error('Invalid products');
+                    return data;
+                } catch (err) {
+                    showToast('Не удалось загрузить товары: ' + (err.message||err), 'error');
+                    return [];
+                }
+            }
 
-    // ---- Init ----
-    (async function(){
-      const ok = await checkAuth();
-      if (!ok) {
-        renderLogin();
-        return;
-      }
-      renderAdminHeader();
-      renderTabs();
-    })();
-  </script>
+            function productRowHtml(p) {
+                const img = p.image_url ? `<img src="${p.image_url}" alt="" class="w-16 h-16 object-cover rounded"/>` : '';
+                return `
+                    <tr class="bg-white">
+                        <td class="px-3 py-2 align-top">${p.id}</td>
+                        <td class="px-3 py-2 align-top">${img}</td>
+                        <td class="px-3 py-2 align-top">${p.name||''}</td>
+                        <td class="px-3 py-2 align-top">${p.volume||''}</td>
+                        <td class="px-3 py-2 align-top">${p.price||''} ₽</td>
+                        <td class="px-3 py-2 align-top text-sm text-gray-600">${p.description||''}</td>
+                        <td class="px-3 py-2 align-top">
+                            <div class="flex gap-2">
+                                <button data-id="${p.id}" class="edit-product bg-yellow-200 px-2 py-1 rounded text-sm">Ред.</button>
+                                <button data-id="${p.id}" class="delete-product bg-red-200 px-2 py-1 rounded text-sm">Удал.</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            async function renderProductsTab() {
+                const content = document.getElementById('tab-content');
+                content.innerHTML = '';
+
+                const header = el(`<div class="mb-4 flex items-center justify-between">
+                    <div class="text-lg font-medium">Товары</div>
+                    <div><button id="add-product-btn" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Добавить товар</button></div>
+                </div>`);
+                content.appendChild(header);
+
+                const tableWrap = el(`<div class="overflow-x-auto"><table id="products-table" class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50"><tr>
+                        <th class="px-3 py-2">ID</th>
+                        <th class="px-3 py-2">Изображение</th>
+                        <th class="px-3 py-2">Название</th>
+                        <th class="px-3 py-2">Объём</th>
+                        <th class="px-3 py-2">Цена</th>
+                        <th class="px-3 py-2">Описание</th>
+                        <th class="px-3 py-2">Действия</th>
+                    </tr></thead>
+                    <tbody id="products-tbody" class="bg-white divide-y divide-gray-100"></tbody>
+                </table></div>`);
+                content.appendChild(tableWrap);
+
+                // Modal/form (hidden)
+                const modal = el(`<div id="product-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+                        <h3 id="modal-title" class="text-lg font-medium mb-4">Новый товар</h3>
+                        <form id="product-form" class="space-y-3">
+                            <input type="hidden" name="id" />
+                            <div><label class="block text-sm">Название</label><input name="name" class="border rounded px-2 py-1 w-full" required /></div>
+                            <div class="flex gap-2"><div><label class="block text-sm">Объём</label><input name="volume" type="number" class="border rounded px-2 py-1"/></div><div><label class="block text-sm">Цена</label><input name="price" type="number" class="border rounded px-2 py-1"/></div></div>
+                            <div><label class="block text-sm">Описание</label><textarea name="description" class="border rounded px-2 py-1 w-full" rows="3"></textarea></div>
+                            <div><label class="block text-sm">Изображение</label><input name="image" type="file" accept="image/*"/></div>
+                            <div class="flex justify-end gap-2"><button type="button" id="cancel-product" class="px-3 py-1 rounded bg-gray-200">Отмена</button><button type="submit" class="px-3 py-1 rounded bg-blue-600 text-white">Сохранить</button></div>
+                        </form>
+                    </div>
+                </div>`);
+                content.appendChild(modal);
+
+                // Load and render
+                const products = await loadProductsList();
+                const tbody = document.getElementById('products-tbody');
+                tbody.innerHTML = products.map(p => productRowHtml(p)).join('');
+
+                // Actions
+                document.getElementById('add-product-btn').addEventListener('click', () => {
+                    openProductModal();
+                });
+
+                function openProductModal(product) {
+                    const modalEl = document.getElementById('product-modal');
+                    const form = document.getElementById('product-form');
+                    form.reset();
+                    form.id.value = '';
+                    document.getElementById('modal-title').textContent = product ? 'Редактировать товар' : 'Новый товар';
+                    if (product) {
+                        form.id.value = product.id;
+                        form.name.value = product.name || '';
+                        form.volume.value = product.volume || '';
+                        form.price.value = product.price || '';
+                        form.description.value = product.description || '';
+                    }
+                    modalEl.classList.remove('hidden');
+                }
+
+                document.getElementById('cancel-product').addEventListener('click', () => {
+                    document.getElementById('product-modal').classList.add('hidden');
+                });
+
+                // Submit form (create or update)
+                document.getElementById('product-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const form = e.target;
+                    const id = form.id.value;
+                    const fd = new FormData(form);
+                    try {
+                        if (id) {
+                            const res = await fetch(`/api/products/${id}`, { method: 'PUT', body: fd, credentials: 'same-origin' });
+                            if (!res.ok) throw new Error(await res.text());
+                            showToast('Товар обновлён');
+                        } else {
+                            const res = await fetch('/api/products', { method: 'POST', body: fd, credentials: 'same-origin' });
+                            if (!res.ok) throw new Error(await res.text());
+                            showToast('Товар добавлен');
+                        }
+                        document.getElementById('product-modal').classList.add('hidden');
+                        await refreshProducts();
+                    } catch (err) {
+                        showToast('Ошибка сохранения: ' + (err.message||err), 'error');
+                    }
+                });
+
+                // Delegate edit/delete
+                tbody.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    try {
+                        const p = await api(`/api/products`);
+                        const prod = p.find(x => String(x.id) === String(id));
+                        openProductModal(prod);
+                    } catch (err) { showToast('Ошибка загрузки товара', 'error'); }
+                }));
+
+                tbody.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    if (!confirm('Удалить товар #' + id + '?')) return;
+                    try {
+                        await api(`/api/products/${id}`, { method: 'DELETE' });
+                        showToast('Товар удалён');
+                        await refreshProducts();
+                    } catch (err) { showToast('Ошибка удаления: ' + (err.message||err), 'error'); }
+                }));
+
+                async function refreshProducts() {
+                    const list = await loadProductsList();
+                    const tb = document.getElementById('products-tbody');
+                    tb.innerHTML = list.map(p => productRowHtml(p)).join('');
+                    // rebind
+                    tb.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const p = await api('/api/products');
+                        const prod = p.find(x => String(x.id) === String(id));
+                        openProductModal(prod);
+                    }));
+                    tb.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        if (!confirm('Удалить товар #' + id + '?')) return;
+                        try { await api(`/api/products/${id}`, { method: 'DELETE' }); showToast('Товар удалён'); await refreshProducts(); } catch (err) { showToast('Ошибка удаления', 'error'); }
+                    }));
+                }
+            }
+
+        // ---- Init ----
+        (async function () {
+            const ok = await checkAuth();
+            if (!ok) {
+                renderLogin();
+                return;
+            }
+            renderAdminHeader();
+            renderTabs();
+        })();
+    </script>
 </body>
+
 </html>
