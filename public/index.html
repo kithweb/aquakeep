@@ -316,8 +316,10 @@
         document.getElementById('success-close').addEventListener('click', () => document.getElementById('success-modal').classList.add('hidden'));
 
     // Initial load
-    await loadProducts();
-    renderCart();
+    (async function(){
+        await loadProducts();
+        renderCart();
+    })();
     </script>
 </body>
 
