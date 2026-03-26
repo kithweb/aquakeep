@@ -191,7 +191,8 @@
                         </div>
                     </div>
                     <h3 class="font-semibold mb-2">Алексей К.</h3>
-                    <p class="text-sm text-gray-600 mb-3">После установки бака забыли о проблемах с водой. Всё работает автоматически, тихо, спасибо!</p>
+                    <p class="text-sm text-gray-600 mb-3">После установки бака забыли о проблемах с водой. Всё работает
+                        автоматически, тихо, спасибо!</p>
                     <div class="flex items-center justify-center space-x-1">
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
@@ -208,7 +209,8 @@
                         </div>
                     </div>
                     <h3 class="font-semibold mb-2">Екатерина М.</h3>
-                    <p class="text-sm text-gray-600 mb-3">Компактный, поместился под мойкой. При отключении воды даже не заметил перебоев.</p>
+                    <p class="text-sm text-gray-600 mb-3">Компактный, поместился под мойкой. При отключении воды даже не
+                        заметил перебоев.</p>
                     <div class="flex items-center justify-center space-x-1">
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
@@ -225,13 +227,62 @@
                         </div>
                     </div>
                     <h3 class="font-semibold mb-2">Дмитрий П.</h3>
-                    <p class="text-sm text-gray-600 mb-3">Установили за час, всё объяснили. Очень довольны, рекомендую.</p>
+                    <p class="text-sm text-gray-600 mb-3">Установили за час, всё объяснили. Очень довольны, рекомендую.
+                    </p>
                     <div class="flex items-center justify-center space-x-1">
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
                         <i class="fas fa-star text-yellow-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-12 bg-white">
+        <div class="mx-auto px-4 max-w-7xl">
+            <h2 class="font-bold text-3xl text-center mb-12">Часто задаваемые вопросы</h2>
+            <div class="space-y-4">
+                <div class="faq-item faq-card opacity-0 bg-white rounded-lg p-4 shadow border hover:shadow-md">
+                    <button class="faq-question w-full flex items-center justify-between text-left font-semibold">
+                        <span>Как работает бак при отключении воды?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Бак подключается к водопроводу. Когда вода есть, он автоматически наполняется. При отключении насос подаёт воду из бака в вашу квартиру или дом. Всё автоматически, без вашего участия.
+                    </div>
+                </div>
+
+                <div class="faq-item faq-card opacity-0 bg-white rounded-lg p-4 shadow border hover:shadow-md">
+                    <button class="faq-question w-full flex items-center justify-between text-left font-semibold">
+                        <span>Нужно ли обслуживание?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Бак не требует регулярного обслуживания. Рекомендуется раз в 6 месяцев проверять работу автоматики и чистоту фильтра (если установлен).
+                    </div>
+                </div>
+
+                <div class="faq-item faq-card opacity-0 bg-white rounded-lg p-4 shadow border hover:shadow-md">
+                    <button class="faq-question w-full flex items-center justify-between text-left font-semibold">
+                        <span>Можно ли установить в частном доме?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Да, бак подходит и для квартир, и для частных домов. Для домов с большим потреблением воды мы рекомендуем объёмы 300–500 л.
+                    </div>
+                </div>
+
+                <div class="faq-item faq-card opacity-0 bg-white rounded-lg p-4 shadow border hover:shadow-md">
+                    <button class="faq-question w-full flex items-center justify-between text-left font-semibold">
+                        <span>Какая гарантия?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Мы предоставляем гарантию 3 года на оборудование и работы. В течение этого времени мы бесплатно устраняем любые неисправности, возникшие не по вине клиента.
                     </div>
                 </div>
             </div>
@@ -327,9 +378,46 @@
             updateHeaderOnScroll();
         })();
 
+        // FAQ accordion behavior: only one open at a time
+        (function () {
+            const items = Array.from(document.querySelectorAll('.faq-item'));
+            if (!items.length) return;
+
+            function closeItem(item) {
+                const panel = item.querySelector('.faq-answer');
+                const icon = item.querySelector('.faq-question i');
+                item.classList.remove('open');
+                if (panel) panel.style.maxHeight = null;
+                if (icon) icon.style.transform = '';
+            }
+
+            function openItem(item) {
+                const panel = item.querySelector('.faq-answer');
+                const icon = item.querySelector('.faq-question i');
+                item.classList.add('open');
+                if (panel) panel.style.maxHeight = panel.scrollHeight + 'px';
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            }
+
+            items.forEach(it => {
+                const btn = it.querySelector('.faq-question');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    const isOpen = it.classList.contains('open');
+                    // close all
+                    items.forEach(i => closeItem(i));
+                    // toggle clicked
+                    if (!isOpen) openItem(it);
+                });
+                // ensure panels have zero height initially
+                const panel = it.querySelector('.faq-answer');
+                if (panel) panel.style.maxHeight = null;
+            });
+        })();
+
         // Animate 'Почему AquaKeep' and 'Как это работает' cards when they enter viewport
         (function () {
-            const cards = Array.from(document.querySelectorAll('.why-card, .how-card, .guarantee-card, .review-card'));
+            const cards = Array.from(document.querySelectorAll('.why-card, .how-card, .guarantee-card, .review-card, .faq-card'));
             if (!cards.length) return;
             const io = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
