@@ -33,12 +33,14 @@
         .animate-delay-200 {
             animation-delay: 200ms;
         }
+
         /* Universal fade-up for main sections */
         .fade-up {
             opacity: 0;
             transform: translateY(20px);
             transition: opacity 0.6s ease, transform 0.6s ease;
         }
+
         .fade-up.visible {
             opacity: 1;
             transform: none;
@@ -158,7 +160,7 @@
     </section>
 
     <!-- Гарантии -->
-    <section id="guarantees" class="py-12 bg-white fade-up">
+    <section id="guarantees" class="py-12 bg-white fade-up mb-12">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Наши гарантии</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -190,7 +192,7 @@
     </section>
 
     <!-- Отзывы клиентов -->
-    <section id="reviews" class="py-12 bg-gray-50 fade-up">
+    <section id="reviews" class="py-12 bg-gray-50 fade-up mb-12">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Отзывы наших клиентов</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -252,7 +254,7 @@
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="py-12 bg-white fade-up">
+    <section id="faq" class="py-12 bg-white fade-up mb-12">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Часто задаваемые вопросы</h2>
             <div class="space-y-4">
@@ -307,7 +309,7 @@
         </div>
     </section>
 
-    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 fade-up">
+    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 fade-up mb-16">
         <!-- Catalog -->
         <section class="lg:col-span-3">
             <div class="flex items-center justify-between mb-4">
@@ -697,6 +699,33 @@
             renderCart();
         })();
     </script>
-</body>
+        <!-- Footer -->
+        <footer class="bg-white border-t mt-8">
+            <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <h4 class="font-semibold mb-3">Контакты</h4>
+                    <div class="text-sm text-gray-700">Телефон: <a href="tel:+79991234567" class="text-blue-600">+7 (999) 123-45-67</a></div>
+                    <div class="text-sm text-gray-700">Email: <a href="mailto:info@aquakeep.ru" class="text-blue-600">info@aquakeep.ru</a></div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-3">Информация</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li><a href="#" class="hover:underline">Политика конфиденциальности</a></li>
+                        <li><a href="#" class="hover:underline">Условия использования</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-3">Социальные сети</h4>
+                    <div class="flex items-center space-x-3 text-2xl text-gray-600">
+                        <i class="fab fa-telegram"></i>
+                        <i class="fab fa-vk"></i>
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 text-center text-sm text-gray-600 py-4">© 2026 AquaKeep. Все права защищены.</div>
+        </footer>
 
-</html>
+    </body>
+
+    </html>
