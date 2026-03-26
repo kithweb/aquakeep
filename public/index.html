@@ -33,11 +33,21 @@
         .animate-delay-200 {
             animation-delay: 200ms;
         }
+        /* Universal fade-up for main sections */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: none;
+        }
     </style>
 
     <!-- Hero -->
     <section id="hero" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #f0f9ff 100%);"
-        class="py-16 md:py-24">
+        class="py-16 md:py-24 fade-up">
         <div class="mx-auto px-4 max-w-7xl text-center">
             <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 animate-fade-in-up">Вода есть всегда</h1>
             <p class="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-6 animate-fade-in-up animate-delay-200">
@@ -63,7 +73,7 @@
     <div style="height:72px" aria-hidden="true"></div>
 
     <!-- Почему AquaKeep -->
-    <section id="why" class="py-12 bg-white">
+    <section id="why" class="py-12 bg-white fade-up">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="text-2xl font-semibold text-gray-900 text-center mb-8">Почему AquaKeep</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -104,7 +114,7 @@
     </section>
 
     <!-- Как это работает -->
-    <section id="how" class="py-12 bg-gray-50">
+    <section id="how" class="py-12 bg-gray-50 fade-up">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Как это работает</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -148,7 +158,7 @@
     </section>
 
     <!-- Гарантии -->
-    <section id="guarantees" class="py-12 bg-white">
+    <section id="guarantees" class="py-12 bg-white fade-up">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Наши гарантии</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -180,7 +190,7 @@
     </section>
 
     <!-- Отзывы клиентов -->
-    <section id="reviews" class="py-12 bg-gray-50">
+    <section id="reviews" class="py-12 bg-gray-50 fade-up">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Отзывы наших клиентов</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -242,7 +252,7 @@
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="py-12 bg-white">
+    <section id="faq" class="py-12 bg-white fade-up">
         <div class="mx-auto px-4 max-w-7xl">
             <h2 class="font-bold text-3xl text-center mb-12">Часто задаваемые вопросы</h2>
             <div class="space-y-4">
@@ -251,8 +261,10 @@
                         <span>Как работает бак при отключении воды?</span>
                         <i class="fas fa-chevron-down transition-transform duration-200"></i>
                     </button>
-                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
-                        Бак подключается к водопроводу. Когда вода есть, он автоматически наполняется. При отключении насос подаёт воду из бака в вашу квартиру или дом. Всё автоматически, без вашего участия.
+                    <div
+                        class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Бак подключается к водопроводу. Когда вода есть, он автоматически наполняется. При отключении
+                        насос подаёт воду из бака в вашу квартиру или дом. Всё автоматически, без вашего участия.
                     </div>
                 </div>
 
@@ -261,8 +273,10 @@
                         <span>Нужно ли обслуживание?</span>
                         <i class="fas fa-chevron-down transition-transform duration-200"></i>
                     </button>
-                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
-                        Бак не требует регулярного обслуживания. Рекомендуется раз в 6 месяцев проверять работу автоматики и чистоту фильтра (если установлен).
+                    <div
+                        class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Бак не требует регулярного обслуживания. Рекомендуется раз в 6 месяцев проверять работу
+                        автоматики и чистоту фильтра (если установлен).
                     </div>
                 </div>
 
@@ -271,8 +285,10 @@
                         <span>Можно ли установить в частном доме?</span>
                         <i class="fas fa-chevron-down transition-transform duration-200"></i>
                     </button>
-                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
-                        Да, бак подходит и для квартир, и для частных домов. Для домов с большим потреблением воды мы рекомендуем объёмы 300–500 л.
+                    <div
+                        class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Да, бак подходит и для квартир, и для частных домов. Для домов с большим потреблением воды мы
+                        рекомендуем объёмы 300–500 л.
                     </div>
                 </div>
 
@@ -281,15 +297,17 @@
                         <span>Какая гарантия?</span>
                         <i class="fas fa-chevron-down transition-transform duration-200"></i>
                     </button>
-                    <div class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
-                        Мы предоставляем гарантию 3 года на оборудование и работы. В течение этого времени мы бесплатно устраняем любые неисправности, возникшие не по вине клиента.
+                    <div
+                        class="faq-answer mt-3 text-sm text-gray-600 max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out">
+                        Мы предоставляем гарантию 3 года на оборудование и работы. В течение этого времени мы бесплатно
+                        устраняем любые неисправности, возникшие не по вине клиента.
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 fade-up">
         <!-- Catalog -->
         <section class="lg:col-span-3">
             <div class="flex items-center justify-between mb-4">
@@ -376,6 +394,21 @@
             window.addEventListener('scroll', updateHeaderOnScroll);
             // init
             updateHeaderOnScroll();
+        })();
+
+        // Universal fade-up observer: add .visible to .fade-up elements when they enter viewport
+        (function () {
+            const nodes = Array.from(document.querySelectorAll('.fade-up'));
+            if (!nodes.length) return;
+            const io = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+            nodes.forEach(n => io.observe(n));
         })();
 
         // FAQ accordion behavior: only one open at a time
