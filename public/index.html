@@ -49,41 +49,6 @@
         </div>
     </section>
 
-        <!-- Как это работает -->
-        <section id="how" class="py-12 bg-gray-50">
-            <div class="mx-auto px-4 max-w-7xl">
-                <h2 class="font-bold text-3xl text-center mb-12">Как это работает</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-3">
-                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">1</span>
-                            <i class="fa-solid fa-water text-blue-600" style="font-size:2rem"></i>
-                        </div>
-                        <h3 class="font-semibold mb-2">Подключение</h3>
-                        <p class="text-sm text-gray-600">Бак подключается к водопроводу после счётчика и обратного клапана.</p>
-                    </div>
-
-                    <div class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-3">
-                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">2</span>
-                            <i class="fa-solid fa-box-archive text-blue-600" style="font-size:2rem"></i>
-                        </div>
-                        <h3 class="font-semibold mb-2">Наполнение</h3>
-                        <p class="text-sm text-gray-600">Когда вода есть, бак автоматически наполняется через ту же трубу.</p>
-                    </div>
-
-                    <div class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-3">
-                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">3</span>
-                            <i class="fa-solid fa-faucet text-blue-600" style="font-size:2rem"></i>
-                        </div>
-                        <h3 class="font-semibold mb-2">Подача</h3>
-                        <p class="text-sm text-gray-600">При отключении насос подаёт воду из бака в вашу квартиру или дом.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     <header id="site-header" class="fixed top-0 left-0 w-full z-40 bg-transparent text-white transition-colors">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <h1 class="text-2xl font-bold">AquaKeep</h1>
@@ -97,33 +62,112 @@
     <!-- spacer so content not hidden under fixed header -->
     <div style="height:72px" aria-hidden="true"></div>
 
-        <!-- Почему AquaKeep -->
-        <section id="why" class="py-12 bg-white">
+    <!-- Почему AquaKeep -->
+    <section id="why" class="py-12 bg-white">
+        <div class="mx-auto px-4 max-w-7xl">
+            <h2 class="text-2xl font-semibold text-gray-900 text-center mb-8">Почему AquaKeep</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div
+                    class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i
+                            class="fa-solid fa-box"></i></div>
+                    <h3 class="font-semibold mb-2">Компактность</h3>
+                    <p class="text-sm text-gray-600">Толщина всего 20 см. Помещается под мойкой или в кладовке.</p>
+                </div>
+
+                <div
+                    class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i
+                            class="fa-solid fa-volume-xmark"></i></div>
+                    <h3 class="font-semibold mb-2">Тихая работа</h3>
+                    <p class="text-sm text-gray-600">Насос работает бесшумно, не мешает отдыху и сну.</p>
+                </div>
+
+                <div
+                    class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i
+                            class="fa-solid fa-gear"></i></div>
+                    <h3 class="font-semibold mb-2">Автоматика</h3>
+                    <p class="text-sm text-gray-600">Включается сама при отключении воды. Не требует настройки.</p>
+                </div>
+
+                <div
+                    class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i
+                            class="fa-solid fa-droplet"></i></div>
+                    <h3 class="font-semibold mb-2">Защита от протечек</h3>
+                    <p class="text-sm text-gray-600">При обнаружении утечки автоматически сливает воду в канализацию,
+                        предотвращая затопление.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Как это работает -->
+    <section id="how" class="py-12 bg-gray-50">
+        <div class="mx-auto px-4 max-w-7xl">
+            <h2 class="font-bold text-3xl text-center mb-12">Как это работает</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div
+                    class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-3">
+                        <span
+                            class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">1</span>
+                        <i class="fa-solid fa-water text-blue-600" style="font-size:2rem"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Подключение</h3>
+                    <p class="text-sm text-gray-600">Бак подключается к водопроводу после счётчика и обратного клапана.
+                    </p>
+                </div>
+
+                <div
+                    class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-3">
+                        <span
+                            class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">2</span>
+                        <i class="fa-solid fa-box-archive text-blue-600" style="font-size:2rem"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Наполнение</h3>
+                    <p class="text-sm text-gray-600">Когда вода есть, бак автоматически наполняется через ту же трубу.
+                    </p>
+                </div>
+
+                <div
+                    class="how-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-center justify-center mb-3">
+                        <span
+                            class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-semibold mr-3">3</span>
+                        <i class="fa-solid fa-faucet text-blue-600" style="font-size:2rem"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Подача</h3>
+                    <p class="text-sm text-gray-600">При отключении насос подаёт воду из бака в вашу квартиру или дом.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Гарантии -->
+        <section id="guarantees" class="py-12 bg-white">
             <div class="mx-auto px-4 max-w-7xl">
-                <h2 class="text-2xl font-semibold text-gray-900 text-center mb-8">Почему AquaKeep</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-box"></i></div>
-                        <h3 class="font-semibold mb-2">Компактность</h3>
-                        <p class="text-sm text-gray-600">Толщина всего 20 см. Помещается под мойкой или в кладовке.</p>
+                <h2 class="font-bold text-3xl text-center mb-12">Наши гарантии</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="guarantee-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:3rem;"><i class="fas fa-calendar-check"></i></div>
+                        <h3 class="font-semibold mb-2">Гарантия 3 года</h3>
+                        <p class="text-sm text-gray-600">Официальная гарантия на оборудование и работы — 3 года.</p>
                     </div>
 
-                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-volume-xmark"></i></div>
-                        <h3 class="font-semibold mb-2">Тихая работа</h3>
-                        <p class="text-sm text-gray-600">Насос работает бесшумно, не мешает отдыху и сну.</p>
+                    <div class="guarantee-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:3rem;"><i class="fas fa-clock"></i></div>
+                        <h3 class="font-semibold mb-2">Установка за 1 час</h3>
+                        <p class="text-sm text-gray-600">Приедем, установим и настроим систему менее чем за час.</p>
                     </div>
 
-                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-gear"></i></div>
-                        <h3 class="font-semibold mb-2">Автоматика</h3>
-                        <p class="text-sm text-gray-600">Включается сама при отключении воды. Не требует настройки.</p>
-                    </div>
-
-                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
-                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-droplet"></i></div>
-                        <h3 class="font-semibold mb-2">Защита от протечек</h3>
-                        <p class="text-sm text-gray-600">При обнаружении утечки автоматически сливает воду в канализацию, предотвращая затопление.</p>
+                    <div class="guarantee-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:3rem;"><i class="fas fa-certificate"></i></div>
+                        <h3 class="font-semibold mb-2">Сертифицировано</h3>
+                        <p class="text-sm text-gray-600">Все баки сертифицированы и соответствуют нормам безопасности.</p>
                     </div>
                 </div>
             </div>

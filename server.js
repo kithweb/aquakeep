@@ -94,7 +94,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname) || '';
-        const name = Date.now() + '-' + Math.random().toString(36).slice(2,8) + ext;
+        const name = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + ext;
         cb(null, name);
     }
 });
@@ -265,7 +265,7 @@ app.post('/api/products', requireAdmin, upload.single('image'), async (req, res)
     const imageUrl = file ? `/uploads/${file.filename}` : null;
     const client = await pool.connect();
     try {
-        const q = await client.query('INSERT INTO products (name, volume, price, description, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name||null, volume?parseInt(volume):null, price?parseInt(price):null, description||null, imageUrl]);
+        const q = await client.query('INSERT INTO products (name, volume, price, description, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name || null, volume ? parseInt(volume) : null, price ? parseInt(price) : null, description || null, imageUrl]);
         res.json(q.rows[0]);
     } catch (err) {
         console.error('POST /api/products error:', err);
@@ -291,11 +291,11 @@ app.put('/api/products/:id', requireAdmin, upload.single('image'), async (req, r
             // remove old file
             if (existing.image_url) {
                 const oldPath = path.join(__dirname, existing.image_url.replace(/^\//, ''));
-                try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e){}
+                try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch (e) { }
             }
             imageUrl = `/uploads/${file.filename}`;
         }
-        const upd = await client.query('UPDATE products SET name=$1, volume=$2, price=$3, description=$4, image_url=$5 WHERE id=$6 RETURNING *', [name||existing.name, volume?parseInt(volume):existing.volume, price?parseInt(price):existing.price, description||existing.description, imageUrl, id]);
+        const upd = await client.query('UPDATE products SET name=$1, volume=$2, price=$3, description=$4, image_url=$5 WHERE id=$6 RETURNING *', [name || existing.name, volume ? parseInt(volume) : existing.volume, price ? parseInt(price) : existing.price, description || existing.description, imageUrl, id]);
         res.json(upd.rows[0]);
     } catch (err) {
         console.error('PUT /api/products/:id error:', err);
@@ -315,7 +315,7 @@ app.delete('/api/products/:id', requireAdmin, async (req, res) => {
         const existing = cur.rows[0];
         if (existing.image_url) {
             const oldPath = path.join(__dirname, existing.image_url.replace(/^\//, ''));
-            try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch(e){}
+            try { if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath); } catch (e) { }
         }
         await client.query('DELETE FROM products WHERE id=$1', [id]);
         res.json({ success: true });

@@ -306,28 +306,28 @@
             renderOrdersTable(container, rows);
         }
 
-            // Products tab
-            async function loadProductsList() {
-                try {
-                    const data = await api('/api/products');
-                    if (!Array.isArray(data)) throw new Error('Invalid products');
-                    return data;
-                } catch (err) {
-                    showToast('Не удалось загрузить товары: ' + (err.message||err), 'error');
-                    return [];
-                }
+        // Products tab
+        async function loadProductsList() {
+            try {
+                const data = await api('/api/products');
+                if (!Array.isArray(data)) throw new Error('Invalid products');
+                return data;
+            } catch (err) {
+                showToast('Не удалось загрузить товары: ' + (err.message || err), 'error');
+                return [];
             }
+        }
 
-            function productRowHtml(p) {
-                const img = p.image_url ? `<img src="${p.image_url}" alt="" class="w-16 h-16 object-cover rounded"/>` : '';
-                return `
+        function productRowHtml(p) {
+            const img = p.image_url ? `<img src="${p.image_url}" alt="" class="w-16 h-16 object-cover rounded"/>` : '';
+            return `
                     <tr class="bg-white">
                         <td class="px-3 py-2 align-top">${p.id}</td>
                         <td class="px-3 py-2 align-top">${img}</td>
-                        <td class="px-3 py-2 align-top">${p.name||''}</td>
-                        <td class="px-3 py-2 align-top">${p.volume||''}</td>
-                        <td class="px-3 py-2 align-top">${p.price||''} ₽</td>
-                        <td class="px-3 py-2 align-top text-sm text-gray-600">${p.description||''}</td>
+                        <td class="px-3 py-2 align-top">${p.name || ''}</td>
+                        <td class="px-3 py-2 align-top">${p.volume || ''}</td>
+                        <td class="px-3 py-2 align-top">${p.price || ''} ₽</td>
+                        <td class="px-3 py-2 align-top text-sm text-gray-600">${p.description || ''}</td>
                         <td class="px-3 py-2 align-top">
                             <div class="flex gap-2">
                                 <button data-id="${p.id}" class="edit-product bg-yellow-200 px-2 py-1 rounded text-sm">Ред.</button>
@@ -336,19 +336,19 @@
                         </td>
                     </tr>
                 `;
-            }
+        }
 
-            async function renderProductsTab() {
-                const content = document.getElementById('tab-content');
-                content.innerHTML = '';
+        async function renderProductsTab() {
+            const content = document.getElementById('tab-content');
+            content.innerHTML = '';
 
-                const header = el(`<div class="mb-4 flex items-center justify-between">
+            const header = el(`<div class="mb-4 flex items-center justify-between">
                     <div class="text-lg font-medium">Товары</div>
                     <div><button id="add-product-btn" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Добавить товар</button></div>
                 </div>`);
-                content.appendChild(header);
+            content.appendChild(header);
 
-                const tableWrap = el(`<div class="overflow-x-auto"><table id="products-table" class="min-w-full divide-y divide-gray-200 text-sm">
+            const tableWrap = el(`<div class="overflow-x-auto"><table id="products-table" class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50"><tr>
                         <th class="px-3 py-2">ID</th>
                         <th class="px-3 py-2">Изображение</th>
@@ -360,10 +360,10 @@
                     </tr></thead>
                     <tbody id="products-tbody" class="bg-white divide-y divide-gray-100"></tbody>
                 </table></div>`);
-                content.appendChild(tableWrap);
+            content.appendChild(tableWrap);
 
-                // Modal/form (hidden)
-                const modal = el(`<div id="product-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+            // Modal/form (hidden)
+            const modal = el(`<div id="product-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
                     <div class="bg-white rounded-lg p-6 w-full max-w-lg">
                         <h3 id="modal-title" class="text-lg font-medium mb-4">Новый товар</h3>
                         <form id="product-form" class="space-y-3">
@@ -376,99 +376,99 @@
                         </form>
                     </div>
                 </div>`);
-                content.appendChild(modal);
+            content.appendChild(modal);
 
-                // Load and render
-                const products = await loadProductsList();
-                const tbody = document.getElementById('products-tbody');
-                tbody.innerHTML = products.map(p => productRowHtml(p)).join('');
+            // Load and render
+            const products = await loadProductsList();
+            const tbody = document.getElementById('products-tbody');
+            tbody.innerHTML = products.map(p => productRowHtml(p)).join('');
 
-                // Actions
-                document.getElementById('add-product-btn').addEventListener('click', () => {
-                    openProductModal();
-                });
+            // Actions
+            document.getElementById('add-product-btn').addEventListener('click', () => {
+                openProductModal();
+            });
 
-                function openProductModal(product) {
-                    const modalEl = document.getElementById('product-modal');
-                    const form = document.getElementById('product-form');
-                    form.reset();
-                    form.id.value = '';
-                    document.getElementById('modal-title').textContent = product ? 'Редактировать товар' : 'Новый товар';
-                    if (product) {
-                        form.id.value = product.id;
-                        form.name.value = product.name || '';
-                        form.volume.value = product.volume || '';
-                        form.price.value = product.price || '';
-                        form.description.value = product.description || '';
-                    }
-                    modalEl.classList.remove('hidden');
+            function openProductModal(product) {
+                const modalEl = document.getElementById('product-modal');
+                const form = document.getElementById('product-form');
+                form.reset();
+                form.id.value = '';
+                document.getElementById('modal-title').textContent = product ? 'Редактировать товар' : 'Новый товар';
+                if (product) {
+                    form.id.value = product.id;
+                    form.name.value = product.name || '';
+                    form.volume.value = product.volume || '';
+                    form.price.value = product.price || '';
+                    form.description.value = product.description || '';
                 }
+                modalEl.classList.remove('hidden');
+            }
 
-                document.getElementById('cancel-product').addEventListener('click', () => {
-                    document.getElementById('product-modal').classList.add('hidden');
-                });
+            document.getElementById('cancel-product').addEventListener('click', () => {
+                document.getElementById('product-modal').classList.add('hidden');
+            });
 
-                // Submit form (create or update)
-                document.getElementById('product-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const form = e.target;
-                    const id = form.id.value;
-                    const fd = new FormData(form);
-                    try {
-                        if (id) {
-                            const res = await fetch(`/api/products/${id}`, { method: 'PUT', body: fd, credentials: 'same-origin' });
-                            if (!res.ok) throw new Error(await res.text());
-                            showToast('Товар обновлён');
-                        } else {
-                            const res = await fetch('/api/products', { method: 'POST', body: fd, credentials: 'same-origin' });
-                            if (!res.ok) throw new Error(await res.text());
-                            showToast('Товар добавлен');
-                        }
-                        document.getElementById('product-modal').classList.add('hidden');
-                        await refreshProducts();
-                    } catch (err) {
-                        showToast('Ошибка сохранения: ' + (err.message||err), 'error');
+            // Submit form (create or update)
+            document.getElementById('product-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const id = form.id.value;
+                const fd = new FormData(form);
+                try {
+                    if (id) {
+                        const res = await fetch(`/api/products/${id}`, { method: 'PUT', body: fd, credentials: 'same-origin' });
+                        if (!res.ok) throw new Error(await res.text());
+                        showToast('Товар обновлён');
+                    } else {
+                        const res = await fetch('/api/products', { method: 'POST', body: fd, credentials: 'same-origin' });
+                        if (!res.ok) throw new Error(await res.text());
+                        showToast('Товар добавлен');
                     }
-                });
+                    document.getElementById('product-modal').classList.add('hidden');
+                    await refreshProducts();
+                } catch (err) {
+                    showToast('Ошибка сохранения: ' + (err.message || err), 'error');
+                }
+            });
 
-                // Delegate edit/delete
-                tbody.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
+            // Delegate edit/delete
+            tbody.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                try {
+                    const p = await api(`/api/products`);
+                    const prod = p.find(x => String(x.id) === String(id));
+                    openProductModal(prod);
+                } catch (err) { showToast('Ошибка загрузки товара', 'error'); }
+            }));
+
+            tbody.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                if (!confirm('Удалить товар #' + id + '?')) return;
+                try {
+                    await api(`/api/products/${id}`, { method: 'DELETE' });
+                    showToast('Товар удалён');
+                    await refreshProducts();
+                } catch (err) { showToast('Ошибка удаления: ' + (err.message || err), 'error'); }
+            }));
+
+            async function refreshProducts() {
+                const list = await loadProductsList();
+                const tb = document.getElementById('products-tbody');
+                tb.innerHTML = list.map(p => productRowHtml(p)).join('');
+                // rebind
+                tb.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
-                    try {
-                        const p = await api(`/api/products`);
-                        const prod = p.find(x => String(x.id) === String(id));
-                        openProductModal(prod);
-                    } catch (err) { showToast('Ошибка загрузки товара', 'error'); }
+                    const p = await api('/api/products');
+                    const prod = p.find(x => String(x.id) === String(id));
+                    openProductModal(prod);
                 }));
-
-                tbody.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
+                tb.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
                     if (!confirm('Удалить товар #' + id + '?')) return;
-                    try {
-                        await api(`/api/products/${id}`, { method: 'DELETE' });
-                        showToast('Товар удалён');
-                        await refreshProducts();
-                    } catch (err) { showToast('Ошибка удаления: ' + (err.message||err), 'error'); }
+                    try { await api(`/api/products/${id}`, { method: 'DELETE' }); showToast('Товар удалён'); await refreshProducts(); } catch (err) { showToast('Ошибка удаления', 'error'); }
                 }));
-
-                async function refreshProducts() {
-                    const list = await loadProductsList();
-                    const tb = document.getElementById('products-tbody');
-                    tb.innerHTML = list.map(p => productRowHtml(p)).join('');
-                    // rebind
-                    tb.querySelectorAll('.edit-product').forEach(b => b.addEventListener('click', async (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        const p = await api('/api/products');
-                        const prod = p.find(x => String(x.id) === String(id));
-                        openProductModal(prod);
-                    }));
-                    tb.querySelectorAll('.delete-product').forEach(b => b.addEventListener('click', async (e) => {
-                        const id = e.target.getAttribute('data-id');
-                        if (!confirm('Удалить товар #' + id + '?')) return;
-                        try { await api(`/api/products/${id}`, { method: 'DELETE' }); showToast('Товар удалён'); await refreshProducts(); } catch (err) { showToast('Ошибка удаления', 'error'); }
-                    }));
-                }
             }
+        }
 
         // ---- Init ----
         (async function () {
