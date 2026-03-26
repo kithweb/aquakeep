@@ -45,12 +45,25 @@
             opacity: 1;
             transform: none;
         }
+
         /* Layout tweaks for mobile */
-        .main { margin-top: 2rem; margin-bottom: 2rem; }
+        .main {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
         /* Ensure product cards have equal height */
-        #products article.product-card { height: 100%; display: flex; flex-direction: column; }
+        #products article.product-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
         /* Make sure product image area doesn't force inconsistent heights */
-        #products article.product-card img { max-height: 160px; object-fit: cover; }
+        #products article.product-card img {
+            max-height: 160px;
+            object-fit: cover;
+        }
     </style>
 
     <!-- Hero -->
@@ -315,90 +328,58 @@
         </div>
     </section>
 
-    <main class="main max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6 fade-up mb-16">
-        <!-- Catalog -->
-        <section class="lg:col-span-3">
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="catalog" class="text-xl font-semibold">Каталог баков</h2>
-                <div class="space-x-2">
-                    <label class="text-sm text-gray-600">Человек</label>
-                    <input id="persons" type="number" min="1" max="10" value="1" class="border rounded px-2 py-1 w-20" />
-                    <label class="text-sm text-gray-600">Тип</label>
-                    <select id="residence" class="border rounded px-2 py-1">
-                      <option value="apartment">Квартира</option>
-                      <option value="house">Частный дом</option>
-                    </select>
-                    <button id="calc-btn" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Рассчитать</button>
-                    <span id="calc-result" class="ml-3 text-sm text-gray-700"></span>
-                </div>
-            </div>
+    <!-- catalog + order form block (kept single, see below) -->
+    <div class="main mx-auto px-4 max-w-7xl py-8 fade-up">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="lg:col-span-3">
+                <div class="bg-white p-4 rounded shadow">
+                    <h2 class="text-2xl font-bold text-center mb-4">Каталог баков</h2>
 
-            <div id="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Products will be injected here -->
-            </div>
-        </section>
+                    <!-- Calculator (inside catalog block, above products) -->
+                    <div class="flex flex-wrap items-end gap-3 justify-center mb-8">
+                        <label class="text-sm text-gray-600">Количество человек</label>
+                        <input id="persons" type="number" min="1" max="10" value="1"
+                            class="border rounded px-2 py-1 w-20" />
 
-    <!-- Sidebar / Order form -->
-    <aside class="lg:col-span-1 bg-white p-4 rounded shadow mt-4 lg:mt-0">
-            <h3 class="text-lg font-medium mb-2">Оформить заказ</h3>
-            <div class="mb-3 text-sm text-gray-600">Корзина (<span id="sidebar-count">0</span> товаров) — Сумма: <strong
-                    id="sidebar-total">0</strong> ₽</div>
+                        <label class="text-sm text-gray-600">Тип недвижимости</label>
+                        <select id="residence" class="border rounded px-2 py-1">
+                            <option value="apartment">Квартира</option>
+                            <option value="house">Частный дом</option>
+                        </select>
 
-            <form id="order-form" class="space-y-3">
-                <input id="name" name="name" placeholder="ФИО" required class="w-full border rounded px-3 py-2" />
-                <input id="phone" name="phone" placeholder="Телефон" required class="w-full border rounded px-3 py-2" />
-                <textarea id="comment" name="comment" placeholder="Комментарий (опционально)"
-                    class="w-full border rounded px-3 py-2 text-sm"></textarea>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Отправить заказ</button>
-            </form>
+                        <button id="calc-btn"
+                            class="bg-green-500 text-white px-3 py-1 rounded text-sm">Рассчитать</button>
+                        <span id="calc-result" class="ml-3 text-sm text-gray-700"></span>
+                    </div>
 
-            <div class="mt-4 text-xs text-gray-500">UTM метки автоматически добавляются из URL.</div>
-        </aside>
-    </main>
-        <div class="mx-auto px-4 max-w-7xl py-8 fade-up">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <div class="lg:col-span-3">
-                    <div class="bg-white p-4 rounded shadow">
-                        <h2 class="text-2xl font-bold text-center mb-4">Каталог баков</h2>
-
-                        <!-- Calculator (inside catalog block, above products) -->
-                        <div class="flex flex-wrap items-end gap-3 justify-center mb-8">
-                            <label class="text-sm text-gray-600">Количество человек</label>
-                            <input id="persons" type="number" min="1" max="10" value="1" class="border rounded px-2 py-1 w-20" />
-
-                            <label class="text-sm text-gray-600">Тип недвижимости</label>
-                            <select id="residence" class="border rounded px-2 py-1">
-                              <option value="apartment">Квартира</option>
-                              <option value="house">Частный дом</option>
-                            </select>
-
-                            <button id="calc-btn" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Рассчитать</button>
-                            <span id="calc-result" class="ml-3 text-sm text-gray-700"></span>
-                        </div>
-
-                        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Products will be injected here -->
-                        </div>
+                    <div id="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Products will be injected here -->
                     </div>
                 </div>
+            </div>
 
-                <div class="lg:col-span-1">
-                    <aside class="bg-white p-4 rounded shadow mt-4 lg:mt-0">
-                        <h3 class="text-lg font-medium mb-2">Оформить заказ</h3>
-                        <div class="mb-3 text-sm text-gray-600">Корзина (<span id="sidebar-count">0</span> товаров) — Сумма: <strong id="sidebar-total">0</strong> ₽</div>
+            <div class="lg:col-span-1">
+                <aside class="bg-white p-4 rounded shadow mt-4 lg:mt-0">
+                    <h3 class="text-lg font-medium mb-2">Оформить заказ</h3>
+                    <div class="mb-3 text-sm text-gray-600">Корзина (<span id="sidebar-count">0</span> товаров) — Сумма:
+                        <strong id="sidebar-total">0</strong> ₽</div>
 
-                        <form id="order-form" class="space-y-3">
-                            <input id="name" name="name" placeholder="ФИО" required class="w-full border rounded px-3 py-2" />
-                            <input id="phone" name="phone" placeholder="Телефон" required class="w-full border rounded px-3 py-2" />
-                            <textarea id="comment" name="comment" placeholder="Комментарий (опционально)" class="w-full border rounded px-3 py-2 text-sm"></textarea>
-                            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Отправить заказ</button>
-                        </form>
+                    <form id="order-form" class="space-y-3">
+                        <input id="name" name="name" placeholder="ФИО" required
+                            class="w-full border rounded px-3 py-2" />
+                        <input id="phone" name="phone" placeholder="Телефон" required
+                            class="w-full border rounded px-3 py-2" />
+                        <textarea id="comment" name="comment" placeholder="Комментарий (опционально)"
+                            class="w-full border rounded px-3 py-2 text-sm"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Отправить
+                            заказ</button>
+                    </form>
 
-                        <div class="mt-4 text-xs text-gray-500">UTM метки автоматически добавляются из URL.</div>
-                    </aside>
-                </div>
+                    <div class="mt-4 text-xs text-gray-500">UTM метки автоматически добавляются из URL.</div>
+                </aside>
             </div>
         </div>
+    </div>
 
     <!-- Cart modal / drawer -->
     <div id="cart-modal"
@@ -641,22 +622,7 @@
             renderCart();
         }
 
-        // Calculator for recommending volume
-        // Replace calculator UI: persons (1-10) and type (apartment / house)
-        const calcArea = document.querySelector('.flex.items-center.justify-between.mb-4 .space-x-2') || document.querySelector('.flex.items-center.justify-between.mb-4 div.space-x-2');
-        if (calcArea) {
-            calcArea.innerHTML = `
-                <label class="text-sm text-gray-600">Человек</label>
-                <input id="persons" type="number" min="1" max="10" value="1" class="border rounded px-2 py-1 w-20" />
-                <label class="text-sm text-gray-600">Тип</label>
-                <select id="residence" class="border rounded px-2 py-1">
-                  <option value="apartment">Квартира</option>
-                  <option value="house">Частный дом</option>
-                </select>
-                <button id="calc-btn" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Рассчитать</button>
-                <span id="calc-result" class="ml-3 text-sm text-gray-700"></span>
-            `;
-        }
+                // Calculator for recommending volume (static controls are in the catalog markup)
 
         document.getElementById('calc-btn').addEventListener('click', () => {
             const persons = parseInt(document.getElementById('persons').value || '1', 10);
