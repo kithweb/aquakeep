@@ -7,6 +7,8 @@
     <title>AquaKeep — Каталог</title>
     <!-- Tailwind via CDN for simplicity -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 
 <body class="bg-gray-50 text-gray-900">
@@ -59,6 +61,38 @@
 
     <!-- spacer so content not hidden under fixed header -->
     <div style="height:72px" aria-hidden="true"></div>
+
+        <!-- Почему AquaKeep -->
+        <section id="why" class="py-12 bg-white">
+            <div class="mx-auto px-4 max-w-7xl">
+                <h2 class="text-2xl font-semibold text-gray-900 text-center mb-8">Почему AquaKeep</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-box"></i></div>
+                        <h3 class="font-semibold mb-2">Компактность</h3>
+                        <p class="text-sm text-gray-600">Толщина всего 20 см. Помещается под мойкой или в кладовке.</p>
+                    </div>
+
+                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-volume-xmark"></i></div>
+                        <h3 class="font-semibold mb-2">Тихая работа</h3>
+                        <p class="text-sm text-gray-600">Насос работает бесшумно, не мешает отдыху и сну.</p>
+                    </div>
+
+                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-gear"></i></div>
+                        <h3 class="font-semibold mb-2">Автоматика</h3>
+                        <p class="text-sm text-gray-600">Включается сама при отключении воды. Не требует настройки.</p>
+                    </div>
+
+                    <div class="why-card opacity-0 bg-white rounded-lg p-6 text-center shadow transition-transform transform hover:scale-105 hover:shadow-xl">
+                        <div class="flex items-center justify-center mb-4 text-blue-600" style="font-size:2.5rem;"><i class="fa-solid fa-droplet"></i></div>
+                        <h3 class="font-semibold mb-2">Защита от протечек</h3>
+                        <p class="text-sm text-gray-600">При обнаружении утечки автоматически сливает воду в канализацию, предотвращая затопление.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
     <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <!-- Catalog -->
@@ -147,6 +181,25 @@
             window.addEventListener('scroll', updateHeaderOnScroll);
             // init
             updateHeaderOnScroll();
+        })();
+
+        // Animate 'Почему AquaKeep' cards when they enter viewport
+        (function () {
+            const cards = Array.from(document.querySelectorAll('.why-card'));
+            if (!cards.length) return;
+            const io = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        const idx = cards.indexOf(el);
+                        el.style.animationDelay = `${idx * 120}ms`;
+                        el.classList.add('animate-fade-in-up');
+                        el.classList.remove('opacity-0');
+                        observer.unobserve(el);
+                    }
+                });
+            }, { threshold: 0.15 });
+            cards.forEach(c => io.observe(c));
         })();
 
         function loadCart() {
