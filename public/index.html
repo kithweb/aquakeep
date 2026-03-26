@@ -10,7 +10,44 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900">
-    <header class="bg-white shadow">
+    <style>
+        /* Hero animations */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 700ms cubic-bezier(.2, .8, .2, 1) both;
+        }
+
+        .animate-delay-200 {
+            animation-delay: 200ms;
+        }
+    </style>
+
+    <!-- Hero -->
+    <section id="hero" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #f0f9ff 100%);"
+        class="py-16 md:py-24">
+        <div class="mx-auto px-4 max-w-7xl text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 animate-fade-in-up">Вода есть всегда</h1>
+            <p class="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-6 animate-fade-in-up animate-delay-200">
+                Автоматический бак AquaKeep накапливает воду, когда она есть, и подаёт, когда её нет. Компактный, тихий,
+                с защитой от протечек.</p>
+            <a href="#catalog"
+                class="inline-block bg-white text-blue-700 font-semibold px-5 py-3 rounded shadow animate-fade-in-up animate-delay-200">Выбрать
+                объём</a>
+        </div>
+    </section>
+
+    <header id="site-header" class="fixed top-0 left-0 w-full z-40 bg-transparent text-white transition-colors">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <h1 class="text-2xl font-bold">AquaKeep</h1>
             <div class="hidden sm:flex items-center space-x-4">
@@ -20,11 +57,14 @@
         </div>
     </header>
 
+    <!-- spacer so content not hidden under fixed header -->
+    <div style="height:72px" aria-hidden="true"></div>
+
     <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <!-- Catalog -->
         <section class="lg:col-span-3">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold">Каталог баков</h2>
+                <h2 id="catalog" class="text-xl font-semibold">Каталог баков</h2>
                 <div class="space-x-2">
                     <label class="text-sm text-gray-600">Калькулятор подбора:</label>
                     <input id="need-liters" type="number" min="0" placeholder="Литры"
@@ -90,6 +130,24 @@
 
         // Utils
         function formatPrice(n) { return n.toLocaleString('ru-RU'); }
+
+        // Header behavior on scroll: transparent over hero, solid on scroll
+        (function () {
+            const headerEl = document.getElementById('site-header');
+            function updateHeaderOnScroll() {
+                if (!headerEl) return;
+                if (window.scrollY > 50) {
+                    headerEl.classList.remove('bg-transparent', 'text-white');
+                    headerEl.classList.add('bg-white', 'text-gray-900', 'shadow', 'backdrop-blur-sm');
+                } else {
+                    headerEl.classList.remove('bg-white', 'text-gray-900', 'shadow', 'backdrop-blur-sm');
+                    headerEl.classList.add('bg-transparent', 'text-white');
+                }
+            }
+            window.addEventListener('scroll', updateHeaderOnScroll);
+            // init
+            updateHeaderOnScroll();
+        })();
 
         function loadCart() {
             try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
@@ -234,11 +292,11 @@
             let liters = persons * 70;
             if (type === 'house') liters = Math.round(liters * 1.5);
             // available volumes
-            const avail = Array.from(new Set(PRODUCTS.map(p => Number(p.volume)).filter(Boolean))).sort((a,b)=>a-b);
-            const defaultAvail = [100,200,300,400,500];
+            const avail = Array.from(new Set(PRODUCTS.map(p => Number(p.volume)).filter(Boolean))).sort((a, b) => a - b);
+            const defaultAvail = [100, 200, 300, 400, 500];
             const vols = avail.length ? avail : defaultAvail;
             // find nearest >= liters, otherwise max
-            let chosen = vols.find(v => v >= liters) || vols[vols.length-1];
+            let chosen = vols.find(v => v >= liters) || vols[vols.length - 1];
             document.getElementById('calc-result').innerHTML = `Рекомендуемый объём: <strong>${chosen} л</strong> <button id="choose-volume" class="ml-3 bg-blue-600 text-white px-2 py-1 rounded text-sm">Выбрать</button>`;
 
             document.getElementById('choose-volume').addEventListener('click', () => {
@@ -256,10 +314,10 @@
         function showTempMessage(msg, isError) {
             // small toast-like
             const el = document.createElement('div');
-            el.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded text-white ${isError? 'bg-red-600' : 'bg-green-600'}`;
+            el.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded text-white ${isError ? 'bg-red-600' : 'bg-green-600'}`;
             el.textContent = msg;
             document.body.appendChild(el);
-            setTimeout(()=>el.remove(), 3000);
+            setTimeout(() => el.remove(), 3000);
         }
 
         // Cart modal controls
@@ -315,11 +373,11 @@
 
         document.getElementById('success-close').addEventListener('click', () => document.getElementById('success-modal').classList.add('hidden'));
 
-    // Initial load
-    (async function(){
-        await loadProducts();
-        renderCart();
-    })();
+        // Initial load
+        (async function () {
+            await loadProducts();
+            renderCart();
+        })();
     </script>
 </body>
 
