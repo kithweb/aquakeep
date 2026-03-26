@@ -127,47 +127,173 @@ if (bot) {
         }
     });
 
-    // Handle callback queries for status changes (callback_data: status:<id>:<status>)
-    bot.on('callback_query', async (q) => {
+    // /start command
+    bot.onText(/\/start/, (msg) => {
         try {
-            const data = q.data || '';
-            if (!data.startsWith('status:')) {
-                await bot.answerCallbackQuery(q.id, { text: 'Unknown action' });
+            const chatId = msg.chat.id;
+            const text = `Привет! Я бот AquaKeep. Вот что я умею:\n/auth — получить код для входа в админку\n/help — список команд\n/orders — просмотр заказов`;
+            bot.sendMessage(chatId, text);
+        } catch (err) {
+            console.error('/start handler error:', err);
+        }
+    });
+
+    // /help command
+    bot.onText(/\/help/, (msg) => {
+        try {
+            const chatId = msg.chat.id;
+            const text = `/auth — код для админки\n/orders [статус] — последние заказы (опционально: new/processed/agreed)\n/status <id> <status> — изменить статус (new/processed/agreed)`;
+            bot.sendMessage(chatId, text);
+        } catch (err) {
+            console.error('/help handler error:', err);
+        }
+    });
+
+    // /orders [status] command
+    bot.onText(/\/orders(?:\s+(\w+))?/, async (msg, match) => {
+        const chatId = msg.chat.id;
+        const status = match && match[1] ? match[1].trim() : null;
+        let client;
+        try {
+            client = await pool.connect();
+            let qtext = 'SELECT id, created_at, name, total, status FROM orders';
+            const params = [];
+            if (status) {
+                params.push(status);
+                qtext += ' WHERE status=$1';
+            }
+            qtext += ' ORDER BY created_at DESC LIMIT 10';
+            const res = await client.query(qtext, params);
+            if (!res.rows.length) {
+                await bot.sendMessage(chatId, `Заказы не найдены${status ? ` с статусом ${status}` : ''}.`);
                 return;
             }
-            const parts = data.split(':');
-            const id = parts[1];
-            const newStatus = parts[2];
-            if (!id || !newStatus) {
-                await bot.answerCallbackQuery(q.id, { text: 'Invalid data' });
+            const lines = res.rows.map(r => {
+                const date = r.created_at ? new Date(r.created_at).toLocaleString() : '-';
+                return `#${r.id} | ${date} | ${r.name || '-'} | ${r.total || 0} ₽ | ${r.status || '-'}`;
+            });
+            await bot.sendMessage(chatId, lines.join('\n'));
+        } catch (err) {
+            console.error('/orders handler error:', err);
+            try { await bot.sendMessage(chatId, 'Ошибка при получении заказов'); } catch (e) { }
+        } finally {
+            if (client) client.release();
+        }
+    });
+
+    // /status <id> <status> command
+    bot.onText(/\/status\s+(\d+)\s+(new|processed|agreed)/, async (msg, match) => {
+        const chatId = msg.chat.id;
+        const id = match[1];
+        const newStatus = match[2];
+        let client;
+        try {
+            client = await pool.connect();
+            const upd = await client.query('UPDATE orders SET status=$1 WHERE id=$2 RETURNING *', [newStatus, id]);
+            if (upd.rowCount === 0) {
+                await bot.sendMessage(chatId, `Заказ #${id} не найден`);
+            } else {
+                await bot.sendMessage(chatId, `Статус заказа #${id} обновлён на ${newStatus}`);
+            }
+        } catch (err) {
+            console.error('/status handler error:', err);
+            try { await bot.sendMessage(chatId, 'Ошибка при изменении статуса'); } catch (e) { }
+        } finally {
+            if (client) client.release();
+        }
+    });
+
+    // Catch unknown slash commands
+    bot.on('message', (msg) => {
+        try {
+            const text = msg.text || '';
+            if (!text.startsWith('/')) return;
+            // Known commands: start, help, auth, orders, status
+            const known = /^\/(start|help|auth|orders|status)(\s|$)/i;
+            if (!known.test(text)) {
+                bot.sendMessage(msg.chat.id, 'Неизвестная команда. Используйте /help для списка команд.');
+            }
+        } catch (err) {
+            console.error('Unknown command handler error:', err);
+        }
+    });
+
+    // Handle callback queries for status changes (callback_data: status:<id>:<status>)
+    bot.on('callback_query', async (q) => {
+            try {
+            const data = q.data || '';
+            // status handling: update order status
+            if (data.startsWith('status:')) {
+                const parts = data.split(':');
+                const id = parts[1];
+                const newStatus = parts[2];
+                if (!id || !newStatus) {
+                    await bot.answerCallbackQuery(q.id, { text: 'Invalid data' });
+                    return;
+                }
+
+                // Update DB
+                const client = await pool.connect();
+                try {
+                    const upd = await client.query('UPDATE orders SET status=$1 WHERE id=$2 RETURNING *', [newStatus, id]);
+                    if (upd.rowCount === 0) {
+                        await bot.answerCallbackQuery(q.id, { text: 'Order not found', show_alert: true });
+                    } else {
+                        const order = upd.rows[0];
+                        // edit original message to include new status
+                        const chatId = q.message.chat.id;
+                        const messageId = q.message.message_id;
+                        const itemsText = (order.items || []).map(i => `${i.qty}×${i.id || i.name || ''}`).join('\n');
+                        const text = `Заказ #${order.id}\nИмя: ${order.name || '-'}\nТелефон: ${order.phone || '-'}\nСумма: ${order.total || 0} ₽\nТовары:\n${itemsText}\nСтатус: ${order.status}`;
+                        const keyboard = {
+                            inline_keyboard: [[
+                                { text: 'Mark processed', callback_data: `status:${order.id}:processed` },
+                                { text: 'Agree', callback_data: `status:${order.id}:agreed` },
+                                { text: 'Позвонить', callback_data: `call:${order.id}` }
+                            ]]
+                        };
+                        await bot.editMessageText(text, { chat_id: chatId, message_id: messageId, reply_markup: keyboard });
+                        await bot.answerCallbackQuery(q.id, { text: 'Статус обновлён' });
+                    }
+                } finally {
+                    client.release();
+                }
                 return;
             }
 
-            // Update DB
-            const client = await pool.connect();
-            try {
-                const upd = await client.query('UPDATE orders SET status=$1 WHERE id=$2 RETURNING *', [newStatus, id]);
-                if (upd.rowCount === 0) {
-                    await bot.answerCallbackQuery(q.id, { text: 'Order not found', show_alert: true });
-                } else {
-                    const order = upd.rows[0];
-                    // edit original message to include new status
-                    const chatId = q.message.chat.id;
-                    const messageId = q.message.message_id;
-                    const itemsText = (order.items || []).map(i => `${i.qty}×${i.id || i.name || ''}`).join('\n');
-                    const text = `Заказ #${order.id}\nИмя: ${order.name || '-'}\nТелефон: ${order.phone || '-'}\nСумма: ${order.total || 0} ₽\nТовары:\n${itemsText}\nСтатус: ${order.status}`;
-                    const keyboard = {
-                        inline_keyboard: [[
-                            { text: 'Mark processed', callback_data: `status:${order.id}:processed` },
-                            { text: 'Agree', callback_data: `status:${order.id}:agreed` }
-                        ]]
-                    };
-                    await bot.editMessageText(text, { chat_id: chatId, message_id: messageId, reply_markup: keyboard });
-                    await bot.answerCallbackQuery(q.id, { text: 'Статус обновлён' });
+            // call handling: send phone privately to the requester
+            if (data.startsWith('call:')) {
+                const parts = data.split(':');
+                const id = parts[1];
+                if (!id) {
+                    await bot.answerCallbackQuery(q.id, { text: 'Invalid data' });
+                    return;
                 }
-            } finally {
-                client.release();
+                const client = await pool.connect();
+                try {
+                    const sel = await client.query('SELECT phone FROM orders WHERE id=$1', [id]);
+                    if (sel.rowCount === 0) {
+                        await bot.answerCallbackQuery(q.id, { text: 'Order not found', show_alert: true });
+                    } else {
+                        const phone = sel.rows[0].phone || '-';
+                        // send phone number to the user who clicked (private message)
+                        try {
+                            await bot.sendMessage(q.from.id, `Телефон клиента для заказа #${id}: ${phone}`);
+                            await bot.answerCallbackQuery(q.id, { text: 'Номер отправлен в личные сообщения' });
+                        } catch (sendErr) {
+                            // If we cannot send private message, fallback to notifying in chat (without revealing?)
+                            console.error('Failed to send private message with phone:', sendErr);
+                            await bot.answerCallbackQuery(q.id, { text: 'Не удалось отправить ЛС. Проверьте, подписан ли пользователь на бота.' });
+                        }
+                    }
+                } finally {
+                    client.release();
+                }
+                return;
             }
+
+            // unknown action
+            await bot.answerCallbackQuery(q.id, { text: 'Unknown action' });
         } catch (err) {
             console.error('callback_query handler error:', err);
             try { await bot.answerCallbackQuery(q.id, { text: 'Ошибка', show_alert: true }); } catch (e) { }
@@ -352,7 +478,8 @@ app.post('/api/order', async (req, res) => {
                 const keyboard = {
                     inline_keyboard: [[
                         { text: 'Mark processed', callback_data: `status:${newId}:processed` },
-                        { text: 'Agree', callback_data: `status:${newId}:agreed` }
+                        { text: 'Agree', callback_data: `status:${newId}:agreed` },
+                        { text: 'Позвонить', callback_data: `call:${newId}` }
                     ]]
                 };
                 await bot.sendMessage(process.env.CHAT_ID, text, { reply_markup: keyboard });

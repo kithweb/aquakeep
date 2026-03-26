@@ -362,7 +362,8 @@
                 <aside class="bg-white p-4 rounded shadow mt-4 lg:mt-0">
                     <h3 class="text-lg font-medium mb-2">Оформить заказ</h3>
                     <div class="mb-3 text-sm text-gray-600">Корзина (<span id="sidebar-count">0</span> товаров) — Сумма:
-                        <strong id="sidebar-total">0</strong> ₽</div>
+                        <strong id="sidebar-total">0</strong> ₽
+                    </div>
 
                     <form id="order-form" class="space-y-3">
                         <input id="name" name="name" placeholder="ФИО" required
@@ -622,7 +623,7 @@
             renderCart();
         }
 
-                // Calculator for recommending volume (static controls are in the catalog markup)
+        // Calculator for recommending volume (static controls are in the catalog markup)
 
         document.getElementById('calc-btn').addEventListener('click', () => {
             const persons = parseInt(document.getElementById('persons').value || '1', 10);
