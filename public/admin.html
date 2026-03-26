@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Админ-панель — Aquakeep</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div id="app" class="min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+      <header class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">Админ-панель</h1>
+        <div id="auth-area"></div>
+      </header>
+
+      <main id="main" class="bg-white rounded-lg shadow p-6">
+        <!-- content injected by JS -->
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed right-4 top-6 w-80 z-50 pointer-events-none"></div>
+
+  <script>
+    // ---- Helpers ----
+    function el(html) {
+      const template = document.createElement('template');
+      template.innerHTML = html.trim();
+      return template.content.firstChild;
+    }
+
+    function showToast(message, type = 'info') {
+      const id = 't' + Date.now();
+      const elToast = document.createElement('div');
+      elToast.id = id;
+      elToast.className = `mb-2 p-3 rounded shadow pointer-events-auto text-sm ${type === 'error' ? 'bg-red-100 text-red-900' : 'bg-green-100 text-green-900'}`;
+      elToast.textContent = message;
+      const container = document.getElementById('toast');
+      container.appendChild(elToast);
+      setTimeout(() => {
+        elToast.remove();
+      }, 5000);
+    }
+
+    async function api(path, opts = {}) {
+      try {
+        const res = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, ...opts });
+        if (!res.ok) {
+          const text = await res.text().catch(()=>'');
+          throw new Error(text || res.statusText || 'network_error');
+        }
+        // try parse json
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return await res.json();
+        return await res.text();
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    // ---- Auth flow ----
+    async function checkAuth() {
+      try {
+        const json = await api('/api/admin/check', { method: 'GET' });
+        return json && json.authorized;
+      } catch (err) {
+        // treat as not authorized
+        return false;
+      }
+    }
+
+    function renderLogin() {
+      const main = document.getElementById('main');
+      main.innerHTML = '';
+      const node = el(`
+        <div>
+          <h2 class="text-lg font-medium mb-4">Вход в админку</h2>
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label class="block text-sm mb-1">Код (6 цифр)</label>
+              <input id="code" name="code" type="text" maxlength="6" pattern="\\d{6}" class="border rounded px-3 py-2 w-64" required />
+            </div>
+            <div>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Войти</button>
+            </div>
+            <p class="text-sm text-gray-600">Откройте Telegram-бота и отправьте команду <code class="bg-gray-100 px-1 rounded">/auth</code>, затем введите полученный код</p>
+          </form>
+        </div>
+      `);
+      main.appendChild(node);
+
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('code').value.trim();
+        if (!/^\d{6}$/.test(code)) { showToast('Код должен содержать 6 цифр', 'error'); return; }
+        try {
+          await api('/api/admin/auth', { method: 'POST', body: JSON.stringify({ code }) });
+          // success -> reload to initialize as authorized
+          location.reload();
+        } catch (err) {
+          showToast('Авторизация не удалась: ' + (err.message || err), 'error');
+        }
+      });
+    }
+
+    // ---- Admin UI ----
+    function renderAdminHeader() {
+      const authArea = document.getElementById('auth-area');
+      authArea.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'text-sm text-gray-600 underline';
+      btn.textContent = 'Выйти';
+      btn.addEventListener('click', async () => {
+        try {
+          await api('/api/admin/logout', { method: 'POST' });
+          location.reload();
+        } catch (err) {
+          showToast('Ошибка выхода: ' + err.message, 'error');
+        }
+      });
+      authArea.appendChild(btn);
+    }
+
+    let ordersCache = [];
+    let currentTab = 'orders';
+    let currentFilter = 'all';
+
+    function renderTabs() {
+      const main = document.getElementById('main');
+      main.innerHTML = '';
+
+      const tabs = el(`<div class="mb-4">
+        <nav class="flex space-x-2">
+          <button id="tab-orders" class="px-3 py-2 rounded bg-blue-600 text-white">Заказы</button>
+          <button id="tab-products" class="px-3 py-2 rounded bg-gray-100 text-gray-700">Товары</button>
+        </nav>
+      </div>`);
+
+      main.appendChild(tabs);
+
+      const content = el('<div id="tab-content"></div>');
+      main.appendChild(content);
+
+      document.getElementById('tab-orders').addEventListener('click', () => { currentTab='orders'; showTab(); });
+      document.getElementById('tab-products').addEventListener('click', () => { currentTab='products'; showTab(); });
+
+      showTab();
+    }
+
+    function showTab() {
+      const ordersBtn = document.getElementById('tab-orders');
+      const productsBtn = document.getElementById('tab-products');
+      if (currentTab === 'orders') {
+        ordersBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
+        productsBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
+        renderOrdersTab();
+      } else {
+        productsBtn.className = 'px-3 py-2 rounded bg-blue-600 text-white';
+        ordersBtn.className = 'px-3 py-2 rounded bg-gray-100 text-gray-700';
+        renderProductsTab();
+      }
+    }
+
+    // Orders tab
+    async function loadOrders() {
+      try {
+        const data = await api('/api/orders');
+        // Expect array
+        if (!Array.isArray(data)) throw new Error('Invalid orders data');
+        ordersCache = data;
+        return data;
+      } catch (err) {
+        showToast('Не удалось загрузить заказы: ' + (err.message || err), 'error');
+        ordersCache = [];
+        return [];
+      }
+    }
+
+    function formatDate(dt) {
+      try {
+        const d = new Date(dt);
+        return d.toLocaleString();
+      } catch (e) { return dt; }
+    }
+
+    function parseItems(items) {
+      if (!items) return [];
+      if (typeof items === 'string') {
+        try { return JSON.parse(items); } catch (e) { return [] }
+      }
+      if (Array.isArray(items)) return items;
+      return [];
+    }
+
+    function renderOrdersTable(container, rows) {
+      container.innerHTML = '';
+      const tableWrap = el('<div class="overflow-x-auto"> </div>');
+      const table = document.createElement('table');
+      table.className = 'min-w-full divide-y divide-gray-200 text-sm';
+      table.innerHTML = `
+        <thead class="bg-gray-50"><tr>
+          <th class="px-3 py-2 text-left">ID</th>
+          <th class="px-3 py-2 text-left">Дата</th>
+          <th class="px-3 py-2 text-left">ФИО</th>
+          <th class="px-3 py-2 text-left">Телефон</th>
+          <th class="px-3 py-2 text-left">Состав</th>
+          <th class="px-3 py-2 text-left">Сумма</th>
+          <th class="px-3 py-2 text-left">UTM</th>
+          <th class="px-3 py-2 text-left">Статус</th>
+        </tr></thead>
+        <tbody id="orders-tbody" class="bg-white divide-y divide-gray-100"></tbody>
+      `;
+      tableWrap.appendChild(table);
+      container.appendChild(tableWrap);
+
+      const tbody = table.querySelector('#orders-tbody');
+
+      rows.forEach(o => {
+        const items = parseItems(o.items);
+        const itemsHtml = items.map(it => `<div class="text-xs">${(it.qty||1)}× ${it.id || it.name || ''}</div>`).join('');
+        const utm = [o.utm_source, o.utm_medium, o.utm_campaign].filter(Boolean).join(' / ');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-3 py-2 align-top">${o.id}</td>
+          <td class="px-3 py-2 align-top">${formatDate(o.created_at || o.created)}</td>
+          <td class="px-3 py-2 align-top">${o.name || ''}</td>
+          <td class="px-3 py-2 align-top">${o.phone || ''}</td>
+          <td class="px-3 py-2 align-top">${itemsHtml}</td>
+          <td class="px-3 py-2 align-top">${o.total || 0} ₽</td>
+          <td class="px-3 py-2 align-top text-xs text-gray-600">${utm}</td>
+          <td class="px-3 py-2 align-top"><select data-id="${o.id}" class="status-select border rounded px-2 py-1 text-sm">
+            <option value="new">new</option>
+            <option value="processed">processed</option>
+            <option value="agreed">agreed</option>
+          </select></td>
+        `;
+
+        tbody.appendChild(tr);
+        const sel = tr.querySelector('.status-select');
+        sel.value = o.status || 'new';
+        sel.addEventListener('change', async (e) => {
+          const newStatus = e.target.value;
+          const id = e.target.getAttribute('data-id');
+          try {
+            await api(`/api/orders/${id}/status`, { method: 'POST', body: JSON.stringify({ status: newStatus }) });
+            showToast('Статус обновлён');
+            // update cache
+            const idx = ordersCache.findIndex(x=>String(x.id)===String(id));
+            if (idx>=0) { ordersCache[idx].status = newStatus; }
+          } catch (err) {
+            showToast('Не удалось обновить статус: ' + (err.message||err), 'error');
+            // revert
+            const idx = ordersCache.findIndex(x=>String(x.id)===String(id));
+            if (idx>=0) { e.target.value = ordersCache[idx].status || 'new'; }
+          }
+        });
+      });
+    }
+
+    async function renderOrdersTab() {
+      const content = document.getElementById('tab-content');
+      content.innerHTML = '';
+
+      const controls = el(`<div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <label class="text-sm mr-2">Фильтр по статусу:</label>
+          <select id="filter-status" class="border rounded px-2 py-1 text-sm">
+            <option value="all">Все</option>
+            <option value="new">new</option>
+            <option value="processed">processed</option>
+            <option value="agreed">agreed</option>
+          </select>
+        </div>
+        <div>
+          <button id="reload-orders" class="bg-gray-200 px-3 py-1 rounded text-sm">Обновить</button>
+        </div>
+      </div>`);
+
+      content.appendChild(controls);
+
+      const tableContainer = el('<div id="orders-container"></div>');
+      content.appendChild(tableContainer);
+
+      document.getElementById('reload-orders').addEventListener('click', async () => { await refreshOrders(); });
+      document.getElementById('filter-status').addEventListener('change', (e) => { currentFilter = e.target.value; applyFilter(); });
+
+      await refreshOrders();
+    }
+
+    async function refreshOrders() {
+      const container = document.getElementById('orders-container');
+      container.innerHTML = '<div class="py-8 text-center text-gray-500">Загрузка...</div>';
+      await loadOrders();
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const container = document.getElementById('orders-container');
+      let rows = ordersCache.slice();
+      if (currentFilter && currentFilter !== 'all') rows = rows.filter(r => (r.status||'new') === currentFilter);
+      renderOrdersTable(container, rows);
+    }
+
+    // Products tab (placeholder)
+    function renderProductsTab() {
+      const content = document.getElementById('tab-content');
+      content.innerHTML = '';
+      const node = el('<div class="py-8 text-center text-gray-600">В разработке</div>');
+      content.appendChild(node);
+    }
+
+    // ---- Init ----
+    (async function(){
+      const ok = await checkAuth();
+      if (!ok) {
+        renderLogin();
+        return;
+      }
+      renderAdminHeader();
+      renderTabs();
+    })();
+  </script>
+</body>
+</html>
