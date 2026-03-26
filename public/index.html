@@ -264,7 +264,7 @@
 
         // Animate 'Почему AquaKeep' and 'Как это работает' cards when they enter viewport
         (function () {
-            const cards = Array.from(document.querySelectorAll('.why-card, .how-card'));
+            const cards = Array.from(document.querySelectorAll('.why-card, .how-card, .guarantee-card'));
             if (!cards.length) return;
             const io = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
