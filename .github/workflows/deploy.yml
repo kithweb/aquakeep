@@ -31,10 +31,11 @@ jobs:
           VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "mkdir -p '${VPS_DIR}'"
 
-      - name: Rsync files to VPS (exclude .env)
+      - name: Rsync files to VPS (exclude .env and uploads)
         run: |
           VPS_DIR="${DEPLOY_PATH:-/var/www/copilot/data/aquakeep}"
-          rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='.env' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
+          # Exclude uploads to avoid deleting user-uploaded files on the server
+          rsync -az --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='.env' --exclude='uploads' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${VPS_USER}@${VPS_HOST}:"${VPS_DIR}"
 
       - name: Copy .env from secrets to VPS
         run: |
