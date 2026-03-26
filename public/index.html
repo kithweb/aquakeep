@@ -83,14 +83,8 @@
     </div>
 
     <script>
-        // Products data
-        const PRODUCTS = [
-            { id: 'p1', name: 'Бак 100 л', volume: 100, price: 4500, desc: 'Компактный бак 100 литров' },
-            { id: 'p2', name: 'Бак 200 л', volume: 200, price: 8000, desc: 'Надёжный бак 200 литров' },
-            { id: 'p3', name: 'Бак 300 л', volume: 300, price: 11500, desc: 'Экономичный бак 300 литров' },
-            { id: 'p4', name: 'Бак 400 л', volume: 400, price: 15000, desc: 'Прочный бак 400 литров' },
-            { id: 'p5', name: 'Бак 500 л', volume: 500, price: 18500, desc: 'Профессиональный бак 500 литров' }
-        ];
+        // Products data (will be loaded from /api/products)
+        let PRODUCTS = [];
 
         const STORAGE_KEY = 'aquakeep_cart_v1';
 
@@ -105,19 +99,41 @@
         // Render products
         const productsEl = document.getElementById('products');
         function renderProducts() {
-            productsEl.innerHTML = PRODUCTS.map(p => `
+            productsEl.innerHTML = PRODUCTS.map(p => {
+                const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-40 object-cover rounded mb-3"/>` : `<div class="h-40 bg-gray-100 rounded mb-3 flex items-center justify-center text-gray-400">${p.volume} L</div>`;
+                return `
                     <article class="bg-white p-4 rounded shadow flex flex-col">
-                        <div class="h-40 bg-gray-100 rounded mb-3 flex items-center justify-center">
-                            <div class="text-gray-400">${p.volume} L</div>
-                        </div>
+                        ${imgHtml}
                         <h3 class="font-semibold">${p.name}</h3>
-                        <p class="text-sm text-gray-600 flex-1">${p.desc}</p>
+                        <p class="text-sm text-gray-600 flex-1">${p.description || ''}</p>
                         <div class="mt-3 flex items-center justify-between">
                             <div class="text-lg font-bold">${formatPrice(p.price)} ₽</div>
-                            <button onclick="addToCart('${p.id}')" class="bg-blue-600 text-white px-3 py-1 rounded">В корзину</button>
+                            <button data-id="${p.id}" class="add-to-cart bg-blue-600 text-white px-3 py-1 rounded">В корзину</button>
                         </div>
                     </article>
-                `).join('');
+                `
+            }).join('');
+
+            // bind add to cart buttons
+            productsEl.querySelectorAll('.add-to-cart').forEach(b => b.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                addToCart(id);
+            }));
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/products');
+                if (!res.ok) throw new Error('Failed to load products');
+                const json = await res.json();
+                // Map server fields to expected shape
+                PRODUCTS = json.map(p => ({ id: String(p.id), name: p.name, volume: p.volume, price: p.price, description: p.description, image_url: p.image_url }));
+            } catch (err) {
+                console.error('Load products error', err);
+                // fallback: keep PRODUCTS empty
+                PRODUCTS = [];
+            }
+            renderProducts();
         }
 
         // Cart operations
@@ -193,13 +209,58 @@
             renderCart();
         }
 
-        // Calculator
+        // Calculator for recommending volume
+        // Replace calculator UI: persons (1-10) and type (apartment / house)
+        const calcArea = document.querySelector('.flex.items-center.justify-between.mb-4 .space-x-2') || document.querySelector('.flex.items-center.justify-between.mb-4 div.space-x-2');
+        if (calcArea) {
+            calcArea.innerHTML = `
+                <label class="text-sm text-gray-600">Человек</label>
+                <input id="persons" type="number" min="1" max="10" value="1" class="border rounded px-2 py-1 w-20" />
+                <label class="text-sm text-gray-600">Тип</label>
+                <select id="residence" class="border rounded px-2 py-1">
+                  <option value="apartment">Квартира</option>
+                  <option value="house">Частный дом</option>
+                </select>
+                <button id="calc-btn" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Рассчитать</button>
+                <span id="calc-result" class="ml-3 text-sm text-gray-700"></span>
+            `;
+        }
+
         document.getElementById('calc-btn').addEventListener('click', () => {
-            const need = parseInt(document.getElementById('need-liters').value || '0', 10);
-            const res = PRODUCTS.find(p => p.volume >= need) || PRODUCTS[PRODUCTS.length - 1];
-            const txt = need > 0 ? `Рекомендуем: ${res.name} (${res.volume} л)` : 'Введите объём в литрах';
-            document.getElementById('calc-result').textContent = txt;
+            const persons = parseInt(document.getElementById('persons').value || '1', 10);
+            const type = document.getElementById('residence').value;
+            if (!persons || persons < 1) { document.getElementById('calc-result').textContent = 'Введите количество человек (1–10)'; return; }
+            // formula
+            let liters = persons * 70;
+            if (type === 'house') liters = Math.round(liters * 1.5);
+            // available volumes
+            const avail = Array.from(new Set(PRODUCTS.map(p => Number(p.volume)).filter(Boolean))).sort((a,b)=>a-b);
+            const defaultAvail = [100,200,300,400,500];
+            const vols = avail.length ? avail : defaultAvail;
+            // find nearest >= liters, otherwise max
+            let chosen = vols.find(v => v >= liters) || vols[vols.length-1];
+            document.getElementById('calc-result').innerHTML = `Рекомендуемый объём: <strong>${chosen} л</strong> <button id="choose-volume" class="ml-3 bg-blue-600 text-white px-2 py-1 rounded text-sm">Выбрать</button>`;
+
+            document.getElementById('choose-volume').addEventListener('click', () => {
+                // find product with this volume
+                const prod = PRODUCTS.find(p => Number(p.volume) === Number(chosen));
+                if (prod) {
+                    addToCart(String(prod.id));
+                    showTempMessage(`Добавлено в корзину: ${prod.name}`);
+                } else {
+                    showTempMessage('Товар с рекомендованным объёмом не найден', true);
+                }
+            });
         });
+
+        function showTempMessage(msg, isError) {
+            // small toast-like
+            const el = document.createElement('div');
+            el.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded text-white ${isError? 'bg-red-600' : 'bg-green-600'}`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(), 3000);
+        }
 
         // Cart modal controls
         document.getElementById('open-cart').addEventListener('click', () => document.getElementById('cart-modal').classList.remove('hidden'));
@@ -254,11 +315,10 @@
 
         document.getElementById('success-close').addEventListener('click', () => document.getElementById('success-modal').classList.add('hidden'));
 
-        // Initial render
-        renderProducts();
-        renderCart();
+    // Initial load
+    await loadProducts();
+    renderCart();
     </script>
 </body>
-asdasasCAdgs
 
 </html>
